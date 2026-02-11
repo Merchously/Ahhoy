@@ -31,8 +31,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install prisma CLI + bcryptjs for database migrations and admin seeding on startup
-RUN npm install -g prisma dotenv bcryptjs pg
+# Install prisma CLI (matching project version) + seed dependencies
+RUN npm install -g prisma@7 dotenv bcryptjs pg
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
