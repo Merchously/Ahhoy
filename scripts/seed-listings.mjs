@@ -189,7 +189,7 @@ const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"
 try {
   // Check if listings already seeded
   const existingCount = await pool.query(`SELECT COUNT(*) as cnt FROM listings`);
-  if (parseInt(existingCount.rows[0].cnt) >= 60) {
+  if (parseInt(existingCount.rows[0].cnt) > 0) {
     console.log(`seed-listings: ${existingCount.rows[0].cnt} listings already exist, skipping`);
     process.exit(0);
   }
