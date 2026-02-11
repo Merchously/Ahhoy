@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Anchor, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -60,7 +60,9 @@ export function RegisterForm() {
       });
 
       if (result?.error) {
-        setError("Account created but sign-in failed. Please try logging in.");
+        setError(
+          "Account created but sign-in failed. Please try logging in."
+        );
         setIsLoading(false);
         return;
       }
@@ -74,45 +76,70 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="flex justify-center mb-2">
-          <Anchor className="h-10 w-10 text-blue-600" />
+    <Card className="w-full max-w-md rounded-2xl shadow-lg border-gray-100">
+      <CardHeader className="text-center pb-2">
+        <div className="lg:hidden mb-4">
+          <span className="text-2xl font-bold text-navy tracking-tight">
+            Ahhoy
+          </span>
         </div>
-        <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Join Ahhoy and discover water experiences</CardDescription>
+        <CardTitle className="text-2xl font-bold text-navy">
+          Create your account
+        </CardTitle>
+        <CardDescription className="text-gray-500">
+          Join Ahhoy and discover water experiences
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div className="rounded-xl bg-red-50 p-3.5 text-sm text-red-600">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" {...register("firstName")} />
+              <Label htmlFor="firstName" className="text-gray-700">
+                First name
+              </Label>
+              <Input
+                id="firstName"
+                className="h-12 rounded-xl"
+                {...register("firstName")}
+              />
               {errors.firstName && (
-                <p className="text-sm text-red-500">{errors.firstName.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.firstName.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
-              <Input id="lastName" {...register("lastName")} />
+              <Label htmlFor="lastName" className="text-gray-700">
+                Last name
+              </Label>
+              <Input
+                id="lastName"
+                className="h-12 rounded-xl"
+                {...register("lastName")}
+              />
               {errors.lastName && (
-                <p className="text-sm text-red-500">{errors.lastName.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.lastName.message}
+                </p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-700">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
+              className="h-12 rounded-xl"
               {...register("email")}
             />
             {errors.email && (
@@ -121,24 +148,32 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-gray-700">
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              className="h-12 rounded-xl"
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Label htmlFor="confirmPassword" className="text-gray-700">
+              Confirm password
+            </Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="••••••••"
+              placeholder="Confirm your password"
+              className="h-12 rounded-xl"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
@@ -148,28 +183,32 @@ export function RegisterForm() {
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             <input
               type="checkbox"
               id="becomeHost"
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-gray-300 text-ocean focus:ring-ocean"
               {...register("becomeHost")}
             />
-            <Label htmlFor="becomeHost" className="text-sm font-normal">
+            <Label htmlFor="becomeHost" className="text-sm font-normal text-gray-600">
               I want to list my boat / create experiences
             </Label>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full h-12 rounded-xl bg-ocean hover:bg-ocean-dark text-white text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>
         </form>
       </CardContent>
       <CardFooter className="justify-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-ocean hover:underline font-medium">
             Sign in
           </Link>
         </p>

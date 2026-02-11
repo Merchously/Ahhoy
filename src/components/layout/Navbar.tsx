@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Anchor, Search, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserMenu } from "./UserMenu";
@@ -13,35 +13,36 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+      <div className="container mx-auto flex h-[72px] items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Anchor className="h-8 w-8 text-blue-600" />
-          <span className="text-xl font-bold text-blue-600">Ahhoy</span>
+        <Link href="/" className="flex items-center gap-1">
+          <span className="text-2xl font-bold text-navy tracking-tight">
+            Ahhoy
+          </span>
         </Link>
 
         {/* Center: Compact Search (visible on md+) */}
         <Link
           href="/search"
-          className="hidden md:flex items-center gap-2 rounded-full border px-4 py-2 shadow-sm hover:shadow-md transition-shadow"
+          className="hidden md:flex items-center gap-3 rounded-full border border-gray-200 px-5 py-2.5 shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <span className="text-sm font-medium">Anywhere</span>
-          <span className="text-muted-foreground">|</span>
-          <span className="text-sm font-medium">Any date</span>
-          <span className="text-muted-foreground">|</span>
-          <span className="text-sm text-muted-foreground">Add guests</span>
-          <div className="rounded-full bg-blue-600 p-1.5">
-            <Search className="h-3 w-3 text-white" />
+          <span className="text-sm font-medium text-gray-900">Anywhere</span>
+          <span className="h-4 w-px bg-gray-200" />
+          <span className="text-sm font-medium text-gray-900">Any date</span>
+          <span className="h-4 w-px bg-gray-200" />
+          <span className="text-sm text-gray-400">Add guests</span>
+          <div className="rounded-full bg-ocean p-2">
+            <Search className="h-3.5 w-3.5 text-white" />
           </div>
         </Link>
 
         {/* Right: Nav items */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {session?.user?.role !== "HOST" && (
             <Link
               href="/become-a-host"
-              className="hidden md:block text-sm font-medium hover:underline"
+              className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition-colors"
             >
               Become a Host
             </Link>
@@ -49,7 +50,7 @@ export function Navbar() {
           {session?.user?.role === "HOST" && (
             <Link
               href="/dashboard"
-              className="hidden md:block text-sm font-medium hover:underline"
+              className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition-colors"
             >
               Dashboard
             </Link>
@@ -59,10 +60,10 @@ export function Navbar() {
             <UserMenu />
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" asChild className="text-gray-600 hover:text-navy">
                 <Link href="/login">Sign In</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="rounded-full bg-ocean hover:bg-ocean-dark text-white px-6">
                 <Link href="/register">Sign Up</Link>
               </Button>
             </div>
@@ -71,45 +72,46 @@ export function Navbar() {
           {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-navy">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <nav className="flex flex-col gap-4 mt-8">
+            <SheetContent side="right" className="w-80">
+              <nav className="flex flex-col gap-2 mt-8">
                 <Link
                   href="/search"
-                  className="text-lg font-medium"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Search Experiences
                 </Link>
                 <Link
                   href="/how-it-works"
-                  className="text-lg font-medium"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   How It Works
                 </Link>
                 <Link
                   href="/become-a-host"
-                  className="text-lg font-medium"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Become a Host
                 </Link>
+                <div className="h-px bg-gray-100 my-2" />
                 {session ? (
                   <>
                     <Link
                       href="/bookings"
-                      className="text-lg font-medium"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       My Bookings
                     </Link>
                     <Link
                       href="/profile"
-                      className="text-lg font-medium"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       Profile
@@ -117,7 +119,7 @@ export function Navbar() {
                     {session.user.role === "HOST" && (
                       <Link
                         href="/dashboard"
-                        className="text-lg font-medium"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                         onClick={() => setOpen(false)}
                       >
                         Dashboard
@@ -128,14 +130,14 @@ export function Navbar() {
                   <>
                     <Link
                       href="/login"
-                      className="text-lg font-medium"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/register"
-                      className="text-lg font-medium"
+                      className="flex items-center justify-center rounded-full bg-ocean text-white px-6 py-3 text-base font-medium hover:bg-ocean-dark transition-colors mt-2"
                       onClick={() => setOpen(false)}
                     >
                       Sign Up

@@ -7,7 +7,6 @@ import {
   Ship,
   CalendarDays,
   DollarSign,
-  Anchor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,14 +21,15 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r bg-gray-50/50 min-h-screen hidden md:block">
+    <aside className="w-64 border-r border-gray-100 bg-white min-h-screen hidden md:block">
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2 mb-8">
-          <Anchor className="h-6 w-6 text-blue-600" />
-          <span className="text-lg font-bold text-blue-600">Ahhoy</span>
+        <Link href="/" className="inline-block mb-10">
+          <span className="text-2xl font-bold text-navy tracking-tight">
+            Ahhoy
+          </span>
         </Link>
 
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -40,13 +40,13 @@ export function DashboardSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-muted-foreground hover:bg-gray-100 hover:text-foreground"
+                    ? "bg-ocean/10 text-ocean"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );

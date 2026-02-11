@@ -53,12 +53,16 @@ export function AdminLoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md border-red-900/30 bg-gray-900">
+    <Card className="w-full max-w-md rounded-2xl border-red-900/30 bg-gray-900 shadow-2xl">
       <CardHeader className="text-center">
-        <div className="flex justify-center mb-2">
-          <Shield className="h-10 w-10 text-red-500" />
+        <div className="flex justify-center mb-3">
+          <div className="w-14 h-14 rounded-xl bg-red-950/50 flex items-center justify-center">
+            <Shield className="h-7 w-7 text-red-500" />
+          </div>
         </div>
-        <CardTitle className="text-2xl text-white">Admin Access</CardTitle>
+        <CardTitle className="text-2xl text-white font-bold">
+          Admin Access
+        </CardTitle>
         <CardDescription className="text-gray-400">
           Sign in to the Ahhoy admin dashboard
         </CardDescription>
@@ -66,7 +70,7 @@ export function AdminLoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-950/50 border border-red-900/50 p-3 text-sm text-red-400">
+            <div className="rounded-xl bg-red-950/50 border border-red-900/50 p-3.5 text-sm text-red-400">
               {error}
             </div>
           )}
@@ -79,7 +83,7 @@ export function AdminLoginForm() {
               id="email"
               type="email"
               placeholder="admin@ahhoy.com"
-              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+              className="h-12 rounded-xl bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
               {...register("email")}
             />
             {errors.email && (
@@ -94,18 +98,20 @@ export function AdminLoginForm() {
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
-              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+              placeholder="Enter your password"
+              className="h-12 rounded-xl bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-red-400">{errors.password.message}</p>
+              <p className="text-sm text-red-400">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
+            className="w-full h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white text-base font-semibold"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

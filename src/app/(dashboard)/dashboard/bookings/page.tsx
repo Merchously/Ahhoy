@@ -32,7 +32,9 @@ export default function HostBookingsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
   async function updateStatus(id: string, status: string) {
     const res = await fetch(`/api/bookings/${id}`, {
@@ -58,9 +60,9 @@ export default function HostBookingsPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6">Bookings</h1>
+        <h1 className="text-2xl font-bold text-navy mb-8">Bookings</h1>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full mb-4" />
+          <Skeleton key={i} className="h-24 w-full mb-4 rounded-xl" />
         ))}
       </div>
     );
@@ -68,49 +70,60 @@ export default function HostBookingsPage() {
 
   function BookingItem({ booking }: { booking: HostBooking }) {
     return (
-      <Card className="mb-3">
-        <CardContent className="p-4">
+      <Card className="mb-3 rounded-xl shadow-sm border-gray-100 bg-white hover:shadow-md transition-shadow">
+        <CardContent className="p-5">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-semibold">{booking.listing.title}</h3>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
+              <h3 className="font-semibold text-gray-900">
+                {booking.listing.title}
+              </h3>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-1.5">
+                <span className="flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5" />
-                  {new Date(booking.date).toLocaleDateString()} | {booking.startTime} - {booking.endTime}
+                  {new Date(booking.date).toLocaleDateString()} |{" "}
+                  {booking.startTime} - {booking.endTime}
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
-                  {booking.guest.firstName} {booking.guest.lastName} ({booking.guestCount} guests)
+                  {booking.guest.firstName} {booking.guest.lastName} (
+                  {booking.guestCount} guests)
                 </span>
               </div>
               {booking.messageToHost && (
-                <p className="text-sm mt-2 bg-gray-50 p-2 rounded italic">
+                <p className="text-sm mt-3 bg-gray-50 p-3 rounded-lg text-gray-500 italic">
                   &quot;{booking.messageToHost}&quot;
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="font-semibold">${Number(booking.totalPrice).toFixed(2)}</p>
-              <Badge variant="secondary" className="mt-1">
+              <p className="font-semibold text-navy">
+                ${Number(booking.totalPrice).toFixed(2)}
+              </p>
+              <Badge
+                variant="secondary"
+                className="mt-1.5 rounded-full text-xs"
+              >
                 {booking.status.replace("_", " ")}
               </Badge>
             </div>
           </div>
           {booking.status === "PENDING" && (
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-4">
               <Button
                 size="sm"
+                className="rounded-lg bg-ocean hover:bg-ocean-dark text-white"
                 onClick={() => updateStatus(booking.id, "CONFIRMED")}
               >
-                <Check className="mr-1 h-3 w-3" />
+                <Check className="mr-1.5 h-3.5 w-3.5" />
                 Confirm
               </Button>
               <Button
                 size="sm"
                 variant="destructive"
+                className="rounded-lg"
                 onClick={() => updateStatus(booking.id, "CANCELLED_HOST")}
               >
-                <X className="mr-1 h-3 w-3" />
+                <X className="mr-1.5 h-3.5 w-3.5" />
                 Decline
               </Button>
             </div>
@@ -122,31 +135,43 @@ export default function HostBookingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Bookings</h1>
+      <h1 className="text-2xl font-bold text-navy mb-8">Bookings</h1>
 
       <Tabs defaultValue="pending">
-        <TabsList>
-          <TabsTrigger value="pending">Pending ({pending.length})</TabsTrigger>
-          <TabsTrigger value="confirmed">Confirmed ({confirmed.length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
+        <TabsList className="rounded-lg bg-gray-100 p-1">
+          <TabsTrigger value="pending" className="rounded-md">
+            Pending ({pending.length})
+          </TabsTrigger>
+          <TabsTrigger value="confirmed" className="rounded-md">
+            Confirmed ({confirmed.length})
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="rounded-md">
+            Completed ({completed.length})
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="pending" className="mt-4">
+        <TabsContent value="pending" className="mt-6">
           {pending.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">No pending bookings</p>
+            <p className="text-center py-12 text-gray-400">
+              No pending bookings
+            </p>
           ) : (
             pending.map((b) => <BookingItem key={b.id} booking={b} />)
           )}
         </TabsContent>
-        <TabsContent value="confirmed" className="mt-4">
+        <TabsContent value="confirmed" className="mt-6">
           {confirmed.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">No confirmed bookings</p>
+            <p className="text-center py-12 text-gray-400">
+              No confirmed bookings
+            </p>
           ) : (
             confirmed.map((b) => <BookingItem key={b.id} booking={b} />)
           )}
         </TabsContent>
-        <TabsContent value="completed" className="mt-4">
+        <TabsContent value="completed" className="mt-6">
           {completed.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">No completed bookings</p>
+            <p className="text-center py-12 text-gray-400">
+              No completed bookings
+            </p>
           ) : (
             completed.map((b) => <BookingItem key={b.id} booking={b} />)
           )}

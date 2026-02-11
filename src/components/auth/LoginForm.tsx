@@ -10,8 +10,15 @@ import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Anchor, Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
@@ -48,28 +55,37 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="flex justify-center mb-2">
-          <Anchor className="h-10 w-10 text-blue-600" />
+    <Card className="w-full max-w-md rounded-2xl shadow-lg border-gray-100">
+      <CardHeader className="text-center pb-2">
+        <div className="lg:hidden mb-4">
+          <span className="text-2xl font-bold text-navy tracking-tight">
+            Ahhoy
+          </span>
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your Ahhoy account</CardDescription>
+        <CardTitle className="text-2xl font-bold text-navy">
+          Welcome back
+        </CardTitle>
+        <CardDescription className="text-gray-500">
+          Sign in to your Ahhoy account
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div className="rounded-xl bg-red-50 p-3.5 text-sm text-red-600">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-700">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
+              className="h-12 rounded-xl"
               {...register("email")}
             />
             {errors.email && (
@@ -78,11 +94,14 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-gray-700">
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              className="h-12 rounded-xl"
               {...register("password")}
             />
             {errors.password && (
@@ -90,7 +109,11 @@ export function LoginForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full h-12 rounded-xl bg-ocean hover:bg-ocean-dark text-white text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
@@ -98,12 +121,12 @@ export function LoginForm() {
 
         {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
           <>
-            <div className="relative my-4">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
+                <span className="bg-white px-3 text-gray-400">
                   Or continue with
                 </span>
               </div>
@@ -111,7 +134,7 @@ export function LoginForm() {
 
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full h-12 rounded-xl border-gray-200"
               onClick={() => signIn("google", { callbackUrl: "/" })}
               disabled={isLoading}
             >
@@ -139,9 +162,9 @@ export function LoginForm() {
         )}
       </CardContent>
       <CardFooter className="justify-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-500">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
+          <Link href="/register" className="text-ocean hover:underline font-medium">
             Sign up
           </Link>
         </p>

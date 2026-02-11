@@ -41,7 +41,11 @@ export function SearchContent() {
     Number(searchParams.get("maxPrice")) || 1000,
   ]);
 
-  const activeActivityTypes = searchParams.get("activityType")?.split(",").filter(Boolean) || [];
+  const activeActivityTypes =
+    searchParams
+      .get("activityType")
+      ?.split(",")
+      .filter(Boolean) || [];
 
   useEffect(() => {
     async function fetchListings() {
@@ -86,51 +90,59 @@ export function SearchContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-8">
       {/* Search header */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <form onSubmit={handleSearch} className="flex-1 flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search experiences, locations..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-10"
+              className="pl-11 h-12 rounded-xl border-gray-200 shadow-sm focus:border-ocean focus:ring-ocean"
             />
           </div>
-          <Button type="submit">Search</Button>
+          <Button
+            type="submit"
+            className="h-12 rounded-xl bg-ocean hover:bg-ocean-dark px-6"
+          >
+            Search
+          </Button>
         </form>
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="md:w-auto w-full">
+            <Button
+              variant="outline"
+              className="h-12 rounded-xl md:w-auto w-full border-gray-200"
+            >
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent>
+          <SheetContent className="rounded-l-2xl">
             <SheetHeader>
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
-            <div className="mt-6 space-y-6">
+            <div className="mt-6 space-y-8">
               <div>
-                <h4 className="font-medium mb-3">Price Range</h4>
+                <h4 className="font-semibold mb-4">Price Range</h4>
                 <Slider
                   value={priceRange}
                   onValueChange={setPriceRange}
                   max={2000}
                   step={10}
-                  className="mb-2"
+                  className="mb-3"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-sm text-gray-500">
                   <span>${priceRange[0]}</span>
                   <span>${priceRange[1]}</span>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="mt-2"
+                  className="mt-3 rounded-lg"
                   onClick={() =>
                     updateParams({
                       minPrice: String(priceRange[0]),
@@ -143,7 +155,7 @@ export function SearchContent() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-3">Activity Type</h4>
+                <h4 className="font-semibold mb-4">Activity Type</h4>
                 <div className="flex flex-wrap gap-2">
                   {ACTIVITY_TYPES.map((type) => (
                     <Badge
@@ -153,7 +165,11 @@ export function SearchContent() {
                           ? "default"
                           : "outline"
                       }
-                      className="cursor-pointer"
+                      className={`cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors ${
+                        activeActivityTypes.includes(type.slug)
+                          ? "bg-ocean text-white hover:bg-ocean-dark"
+                          : "hover:bg-gray-100"
+                      }`}
                       onClick={() => toggleActivityType(type.slug)}
                     >
                       {type.label}
@@ -163,12 +179,13 @@ export function SearchContent() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-3">Guests</h4>
+                <h4 className="font-semibold mb-4">Guests</h4>
                 <Input
                   type="number"
                   min={1}
                   placeholder="Number of guests"
                   defaultValue={searchParams.get("guests") || ""}
+                  className="h-12 rounded-xl"
                   onChange={(e) =>
                     updateParams({
                       guests: e.target.value || null,
@@ -181,16 +198,37 @@ export function SearchContent() {
         </Sheet>
       </div>
 
+      {/* Activity type pills */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {ACTIVITY_TYPES.map((type) => (
+          <button
+            key={type.slug}
+            onClick={() => toggleActivityType(type.slug)}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              activeActivityTypes.includes(type.slug)
+                ? "bg-ocean text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {type.label}
+          </button>
+        ))}
+      </div>
+
       {/* Active filters */}
       {activeActivityTypes.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-6">
           {activeActivityTypes.map((slug) => {
             const type = ACTIVITY_TYPES.find((t) => t.slug === slug);
             return (
-              <Badge key={slug} variant="secondary" className="gap-1">
+              <Badge
+                key={slug}
+                variant="secondary"
+                className="gap-1.5 rounded-full bg-ocean-light text-ocean px-3 py-1"
+              >
                 {type?.label || slug}
                 <X
-                  className="h-3 w-3 cursor-pointer"
+                  className="h-3 w-3 cursor-pointer hover:text-ocean-dark"
                   onClick={() => toggleActivityType(slug)}
                 />
               </Badge>
@@ -199,6 +237,7 @@ export function SearchContent() {
           <Button
             variant="ghost"
             size="sm"
+            className="text-gray-400 hover:text-gray-600"
             onClick={() => updateParams({ activityType: null })}
           >
             Clear all
@@ -207,33 +246,45 @@ export function SearchContent() {
       )}
 
       {/* Results count */}
-      <p className="text-sm text-muted-foreground mb-4">
-        {loading ? "Searching..." : `${total} experience${total !== 1 ? "s" : ""} found`}
+      <p className="text-sm text-gray-500 mb-6">
+        {loading ? (
+          "Searching..."
+        ) : (
+          <>
+            <span className="font-semibold text-ocean">{total}</span>{" "}
+            experience{total !== 1 ? "s" : ""} found
+          </>
+        )}
       </p>
 
       {/* Results grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="space-y-3">
-              <Skeleton className="aspect-[4/3] w-full rounded-lg" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+              <Skeleton className="h-4 w-3/4 rounded-lg" />
+              <Skeleton className="h-4 w-1/2 rounded-lg" />
             </div>
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {results.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No experiences found</h3>
-          <p className="text-muted-foreground">
-            Try adjusting your search or filters to find what you&apos;re looking for.
+        <div className="text-center py-20">
+          <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+            <MapPin className="h-10 w-10 text-gray-300" />
+          </div>
+          <h3 className="text-lg font-semibold text-navy mb-2">
+            No experiences found
+          </h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filters to find what you&apos;re
+            looking for.
           </p>
         </div>
       )}

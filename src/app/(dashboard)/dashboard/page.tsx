@@ -21,12 +21,15 @@ export default async function DashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-navy">Dashboard</h1>
+          <p className="text-gray-500 mt-1">
             Welcome back, {session.user.name?.split(" ")[0] || "Host"}
           </p>
         </div>
-        <Button asChild>
+        <Button
+          asChild
+          className="rounded-xl bg-ocean hover:bg-ocean-dark text-white"
+        >
           <Link href="/dashboard/listings/new">
             <Plus className="mr-2 h-4 w-4" />
             New Listing
@@ -34,49 +37,69 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-5 md:grid-cols-3">
+        <Card className="rounded-2xl shadow-sm border-gray-100 bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Listings</CardTitle>
-            <Ship className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Active Listings
+            </CardTitle>
+            <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center">
+              <Ship className="h-5 w-5 text-ocean" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Published experiences</p>
+            <div className="text-3xl font-bold text-navy">0</div>
+            <p className="text-xs text-gray-400 mt-1">Published experiences</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl shadow-sm border-gray-100 bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming Bookings</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Upcoming Bookings
+            </CardTitle>
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <CalendarDays className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Confirmed bookings</p>
+            <div className="text-3xl font-bold text-navy">0</div>
+            <p className="text-xs text-gray-400 mt-1">Confirmed bookings</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl shadow-sm border-gray-100 bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Total Earnings
+            </CardTitle>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <DollarSign className="h-5 w-5 text-amber-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
-            <p className="text-xs text-muted-foreground">Lifetime earnings</p>
+            <div className="text-3xl font-bold text-navy">$0.00</div>
+            <p className="text-xs text-gray-400 mt-1">Lifetime earnings</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="mt-8">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Ship className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No listings yet</h3>
-          <p className="text-muted-foreground text-center max-w-md mb-4">
-            Create your first water experience listing to start receiving bookings from guests.
+      <Card className="mt-8 rounded-2xl shadow-sm border-gray-100 bg-white">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
+            <Ship className="h-10 w-10 text-gray-300" />
+          </div>
+          <h3 className="text-lg font-semibold text-navy mb-2">
+            No listings yet
+          </h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            Create your first water experience listing to start receiving
+            bookings from guests.
           </p>
-          <Button asChild>
+          <Button
+            asChild
+            className="rounded-xl bg-ocean hover:bg-ocean-dark text-white"
+          >
             <Link href="/dashboard/listings/new">
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Listing

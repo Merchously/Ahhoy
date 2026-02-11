@@ -17,40 +17,39 @@ export function UserMenu() {
 
   if (!session?.user) return null;
 
-  const initials =
-    (session.user.name?.charAt(0) || "U").toUpperCase();
+  const initials = (session.user.name?.charAt(0) || "U").toUpperCase();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
-        <Avatar className="h-9 w-9 cursor-pointer">
+        <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-transparent hover:ring-ocean/20 transition-all">
           <AvatarImage src={session.user.image || undefined} />
-          <AvatarFallback className="bg-blue-100 text-blue-600">
+          <AvatarFallback className="bg-ocean-light text-ocean font-semibold">
             {initials}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">{session.user.name}</p>
+      <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
+        <div className="px-3 py-2">
+          <p className="text-sm font-semibold">{session.user.name}</p>
           <p className="text-xs text-muted-foreground">{session.user.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
+        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+          <Link href="/profile">
             <User className="mr-2 h-4 w-4" />
             Profile
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/bookings" className="cursor-pointer">
+        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+          <Link href="/bookings">
             <CalendarDays className="mr-2 h-4 w-4" />
             My Bookings
           </Link>
         </DropdownMenuItem>
         {session.user.role === "HOST" && (
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="cursor-pointer">
+          <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+            <Link href="/dashboard">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </Link>
@@ -58,7 +57,7 @@ export function UserMenu() {
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="cursor-pointer text-red-600 focus:text-red-600"
+          className="rounded-lg cursor-pointer text-red-600 focus:text-red-600"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />

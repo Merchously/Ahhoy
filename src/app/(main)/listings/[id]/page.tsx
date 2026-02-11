@@ -49,7 +49,12 @@ interface ListingDetail {
   requirements: string[];
   cancellationPolicy: string;
   instantBook: boolean;
-  photos: { id: string; url: string; altText: string | null; isPrimary: boolean }[];
+  photos: {
+    id: string;
+    url: string;
+    altText: string | null;
+    isPrimary: boolean;
+  }[];
   activityTypes: { activityType: { label: string; slug: string } }[];
   host: {
     id: string;
@@ -64,7 +69,11 @@ interface ListingDetail {
     rating: number;
     comment: string | null;
     createdAt: string;
-    author: { firstName: string; lastName: string; avatarUrl: string | null };
+    author: {
+      firstName: string;
+      lastName: string;
+      avatarUrl: string | null;
+    };
   }[];
   averageRating: number | null;
   reviewCount: number;
@@ -139,15 +148,15 @@ export default function ListingDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-8 w-2/3 mb-4" />
-        <Skeleton className="aspect-[2/1] w-full rounded-xl mb-8" />
+        <Skeleton className="h-8 w-2/3 mb-4 rounded-lg" />
+        <Skeleton className="aspect-[2/1] w-full rounded-2xl mb-8" />
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-full rounded-lg" />
+            <Skeleton className="h-4 w-3/4 rounded-lg" />
+            <Skeleton className="h-4 w-1/2 rounded-lg" />
           </div>
-          <Skeleton className="h-64" />
+          <Skeleton className="h-64 rounded-2xl" />
         </div>
       </div>
     );
@@ -155,26 +164,41 @@ export default function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-2">Listing not found</h1>
-        <p className="text-muted-foreground">This experience may have been removed.</p>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+          <Ship className="h-10 w-10 text-gray-300" />
+        </div>
+        <h1 className="text-2xl font-bold text-navy mb-2">
+          Listing not found
+        </h1>
+        <p className="text-gray-500">
+          This experience may have been removed.
+        </p>
       </div>
     );
   }
 
-  const price = listing.pricingType === "PER_PERSON" ? listing.pricePerPerson : listing.flatPrice;
-  const subtotal = listing.pricingType === "PER_PERSON" ? (price || 0) * guestCount : price || 0;
+  const price =
+    listing.pricingType === "PER_PERSON"
+      ? listing.pricePerPerson
+      : listing.flatPrice;
+  const subtotal =
+    listing.pricingType === "PER_PERSON"
+      ? (price || 0) * guestCount
+      : price || 0;
   const serviceFee = subtotal * 0.15;
   const total = subtotal + serviceFee;
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold mb-2">{listing.title}</h1>
-      <div className="flex items-center gap-3 text-sm text-muted-foreground mb-6">
+      <h1 className="text-2xl md:text-3xl font-bold text-navy mb-2">
+        {listing.title}
+      </h1>
+      <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
         {listing.averageRating && (
           <span className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
             {listing.averageRating.toFixed(1)} ({listing.reviewCount} reviews)
           </span>
         )}
@@ -185,7 +209,7 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Photo gallery */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl overflow-hidden mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl overflow-hidden mb-8">
         {listing.photos.length > 0 ? (
           <>
             <div className="relative aspect-[4/3]">
@@ -197,7 +221,7 @@ export default function ListingDetailPage() {
                 priority
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {listing.photos.slice(1, 5).map((photo) => (
                 <div key={photo.id} className="relative aspect-[4/3]">
                   <Image
@@ -211,8 +235,8 @@ export default function ListingDetailPage() {
             </div>
           </>
         ) : (
-          <div className="col-span-2 aspect-[3/1] bg-gray-200 flex items-center justify-center rounded-xl">
-            <Ship className="h-16 w-16 text-muted-foreground" />
+          <div className="col-span-2 aspect-[3/1] bg-gray-100 flex items-center justify-center rounded-2xl">
+            <Ship className="h-16 w-16 text-gray-300" />
           </div>
         )}
       </div>
@@ -224,24 +248,31 @@ export default function ListingDetailPage() {
           {/* Activity types */}
           <div className="flex flex-wrap gap-2">
             {listing.activityTypes.map((at) => (
-              <Badge key={at.activityType.slug} variant="secondary">
+              <Badge
+                key={at.activityType.slug}
+                variant="secondary"
+                className="rounded-full bg-ocean-light text-ocean px-3"
+              >
                 {at.activityType.label}
               </Badge>
             ))}
           </div>
 
           {/* Host info */}
-          <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12">
+          <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl">
+            <Avatar className="h-14 w-14">
               <AvatarImage src={listing.host.avatarUrl || undefined} />
-              <AvatarFallback>{listing.host.firstName[0]}</AvatarFallback>
+              <AvatarFallback className="bg-ocean-light text-ocean font-semibold text-lg">
+                {listing.host.firstName[0]}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold">
+              <p className="font-semibold text-navy">
                 Hosted by {listing.host.firstName} {listing.host.lastName}
               </p>
-              <p className="text-sm text-muted-foreground">
-                Member since {new Date(listing.host.createdAt).getFullYear()}
+              <p className="text-sm text-gray-500">
+                Member since{" "}
+                {new Date(listing.host.createdAt).getFullYear()}
               </p>
             </div>
           </div>
@@ -249,20 +280,32 @@ export default function ListingDetailPage() {
           {/* Quick facts */}
           <div className="flex flex-wrap gap-6 text-sm">
             <span className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              {listing.durationMinutes >= 60
-                ? `${Math.floor(listing.durationMinutes / 60)}h${listing.durationMinutes % 60 ? ` ${listing.durationMinutes % 60}m` : ""}`
-                : `${listing.durationMinutes}m`}
+              <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-ocean" />
+              </div>
+              <span className="text-gray-700">
+                {listing.durationMinutes >= 60
+                  ? `${Math.floor(listing.durationMinutes / 60)}h${listing.durationMinutes % 60 ? ` ${listing.durationMinutes % 60}m` : ""}`
+                  : `${listing.durationMinutes}m`}
+              </span>
             </span>
             <span className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              {listing.minGuests}-{listing.maxGuests} guests
+              <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-ocean" />
+              </div>
+              <span className="text-gray-700">
+                {listing.minGuests}-{listing.maxGuests} guests
+              </span>
             </span>
             {listing.boatType && (
               <span className="flex items-center gap-2">
-                <Ship className="h-5 w-5 text-blue-600" />
-                {listing.boatType}
-                {listing.boatLength && ` (${listing.boatLength}ft)`}
+                <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center">
+                  <Ship className="h-5 w-5 text-ocean" />
+                </div>
+                <span className="text-gray-700">
+                  {listing.boatType}
+                  {listing.boatLength && ` (${listing.boatLength}ft)`}
+                </span>
               </span>
             )}
           </div>
@@ -271,8 +314,10 @@ export default function ListingDetailPage() {
 
           {/* Description */}
           <div>
-            <h2 className="text-xl font-semibold mb-3">About this experience</h2>
-            <p className="text-muted-foreground whitespace-pre-line">
+            <h2 className="text-xl font-semibold text-navy mb-3">
+              About this experience
+            </h2>
+            <p className="text-gray-500 whitespace-pre-line leading-relaxed">
               {listing.description}
             </p>
           </div>
@@ -282,36 +327,42 @@ export default function ListingDetailPage() {
             <>
               <Separator />
               <div>
-                <h2 className="text-xl font-semibold mb-3">The Boat</h2>
+                <h2 className="text-xl font-semibold text-navy mb-4">
+                  The Boat
+                </h2>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   {listing.boatName && (
-                    <div>
-                      <span className="text-muted-foreground">Name:</span>{" "}
-                      {listing.boatName}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Name:</span>
+                      <span className="text-gray-700">{listing.boatName}</span>
                     </div>
                   )}
                   {listing.boatType && (
-                    <div>
-                      <span className="text-muted-foreground">Type:</span>{" "}
-                      {listing.boatType}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Type:</span>
+                      <span className="text-gray-700">{listing.boatType}</span>
                     </div>
                   )}
                   {listing.boatYear && (
-                    <div>
-                      <span className="text-muted-foreground">Year:</span>{" "}
-                      {listing.boatYear}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Year:</span>
+                      <span className="text-gray-700">{listing.boatYear}</span>
                     </div>
                   )}
                   {listing.boatManufacturer && (
-                    <div>
-                      <span className="text-muted-foreground">Make:</span>{" "}
-                      {listing.boatManufacturer}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Make:</span>
+                      <span className="text-gray-700">
+                        {listing.boatManufacturer}
+                      </span>
                     </div>
                   )}
                   {listing.boatLength && (
-                    <div>
-                      <span className="text-muted-foreground">Length:</span>{" "}
-                      {listing.boatLength} ft
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Length:</span>
+                      <span className="text-gray-700">
+                        {listing.boatLength} ft
+                      </span>
                     </div>
                   )}
                 </div>
@@ -320,18 +371,26 @@ export default function ListingDetailPage() {
           )}
 
           {/* What's included */}
-          {(listing.includedItems.length > 0 || listing.notIncludedItems.length > 0) && (
+          {(listing.includedItems.length > 0 ||
+            listing.notIncludedItems.length > 0) && (
             <>
               <Separator />
               <div>
-                <h2 className="text-xl font-semibold mb-3">What&apos;s included</h2>
+                <h2 className="text-xl font-semibold text-navy mb-4">
+                  What&apos;s included
+                </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {listing.includedItems.length > 0 && (
                     <div>
                       {listing.includedItems.map((item) => (
-                        <div key={item} className="flex items-center gap-2 mb-2 text-sm">
-                          <Check className="h-4 w-4 text-green-600" />
-                          {item}
+                        <div
+                          key={item}
+                          className="flex items-center gap-2.5 mb-2.5 text-sm"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                          </div>
+                          <span className="text-gray-700">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -339,9 +398,14 @@ export default function ListingDetailPage() {
                   {listing.notIncludedItems.length > 0 && (
                     <div>
                       {listing.notIncludedItems.map((item) => (
-                        <div key={item} className="flex items-center gap-2 mb-2 text-sm">
-                          <X className="h-4 w-4 text-red-500" />
-                          {item}
+                        <div
+                          key={item}
+                          className="flex items-center gap-2.5 mb-2.5 text-sm"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                            <X className="h-3.5 w-3.5 text-red-500" />
+                          </div>
+                          <span className="text-gray-700">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -356,45 +420,48 @@ export default function ListingDetailPage() {
             <>
               <Separator />
               <div>
-                <h2 className="text-xl font-semibold mb-4">
+                <h2 className="text-xl font-semibold text-navy mb-5">
                   Reviews ({listing.reviewCount})
                 </h2>
                 <div className="space-y-4">
                   {listing.reviews.map((review) => (
-                    <Card key={review.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={review.author.avatarUrl || undefined} />
-                            <AvatarFallback>
-                              {review.author.firstName[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {review.author.firstName} {review.author.lastName}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-3 w-3 ${
-                                    i < review.rating
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
+                    <div
+                      key={review.id}
+                      className="bg-gray-50 rounded-xl p-5"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src={review.author.avatarUrl || undefined}
+                          />
+                          <AvatarFallback className="bg-ocean-light text-ocean text-sm">
+                            {review.author.firstName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {review.author.firstName} {review.author.lastName}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < review.rating
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-gray-200"
+                                }`}
+                              />
+                            ))}
                           </div>
                         </div>
-                        {review.comment && (
-                          <p className="text-sm text-muted-foreground">
-                            {review.comment}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-gray-500 leading-relaxed">
+                          {review.comment}
+                        </p>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -404,24 +471,30 @@ export default function ListingDetailPage() {
 
         {/* Right: Booking widget */}
         <div>
-          <Card className="sticky top-24">
+          <Card className="sticky top-24 rounded-2xl shadow-lg border-gray-100">
             <CardHeader>
               <CardTitle className="flex items-baseline gap-1">
-                <span className="text-2xl">${price?.toFixed(0) || "0"}</span>
-                <span className="text-sm font-normal text-muted-foreground">
-                  {listing.pricingType === "PER_PERSON" ? "/ person" : " total"}
+                <span className="text-3xl font-bold text-navy">
+                  ${price?.toFixed(0) || "0"}
+                </span>
+                <span className="text-sm font-normal text-gray-500">
+                  {listing.pricingType === "PER_PERSON"
+                    ? "/ person"
+                    : " total"}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="date">Date</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="date" className="text-gray-700">
+                  Date
+                </Label>
+                <div className="relative mt-1.5">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="date"
                     type="date"
-                    className="pl-10"
+                    className="pl-10 h-12 rounded-xl"
                     value={bookingDate}
                     onChange={(e) => setBookingDate(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
@@ -430,7 +503,9 @@ export default function ListingDetailPage() {
               </div>
 
               <div>
-                <Label htmlFor="guests">Guests</Label>
+                <Label htmlFor="guests" className="text-gray-700">
+                  Guests
+                </Label>
                 <Input
                   id="guests"
                   type="number"
@@ -438,8 +513,9 @@ export default function ListingDetailPage() {
                   max={listing.maxGuests}
                   value={guestCount}
                   onChange={(e) => setGuestCount(Number(e.target.value))}
+                  className="h-12 rounded-xl mt-1.5"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-gray-400 mt-1.5">
                   {listing.minGuests}-{listing.maxGuests} guests allowed
                 </p>
               </div>
@@ -447,29 +523,31 @@ export default function ListingDetailPage() {
               <Separator />
 
               {/* Price breakdown */}
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <span>
+                  <span className="text-gray-500">
                     ${price?.toFixed(2)}{" "}
                     {listing.pricingType === "PER_PERSON"
                       ? `x ${guestCount} guest${guestCount > 1 ? "s" : ""}`
                       : "flat rate"}
                   </span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span className="text-gray-700">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Service fee</span>
-                  <span>${serviceFee.toFixed(2)}</span>
+                  <span className="text-gray-500">Service fee</span>
+                  <span className="text-gray-700">
+                    ${serviceFee.toFixed(2)}
+                  </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-semibold text-base">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span className="text-navy">Total</span>
+                  <span className="text-navy">${total.toFixed(2)}</span>
                 </div>
               </div>
 
               <Button
-                className="w-full"
+                className="w-full h-12 rounded-xl bg-ocean hover:bg-ocean-dark text-white text-base font-semibold"
                 size="lg"
                 onClick={handleBook}
                 disabled={bookingLoading}
@@ -480,7 +558,7 @@ export default function ListingDetailPage() {
                 {listing.instantBook ? "Book Now" : "Request to Book"}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-gray-400">
                 {listing.cancellationPolicy === "FLEXIBLE"
                   ? "Free cancellation up to 24 hours before"
                   : listing.cancellationPolicy === "MODERATE"
