@@ -1,0 +1,353 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// USER & AUTHENTICATION
+// ============================================================
+
+enum UserRole {
+  GUEST
+  HOST
+  ADMIN
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  firstName      String
+  lastName       String
+  phone          String?
+  avatarUrl      String?
+  bio            String?   @db.Text
+  role           UserRole  @default(GUEST)
+
+  // Stripe
+  stripeCustomerId         String?  @unique
+  stripeConnectId          String?  @unique
+  stripeOnboardingComplete Boolean  @default(false)
+
+  // Location
+  city    String?
+  state   String?
+  country String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  listings        Listing[]
+  bookings        Booking[]
+  reviewsGiven    Review[]  @relation("ReviewAuthor")
+  reviewsReceived Review[]  @relation("ReviewSubject")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================
+// ACTIVITY TYPES
+// ============================================================
+
+model ActivityType {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  label       String
+  description String?
+  iconName    String?
+  slug        String  @unique
+
+  listings ListingActivityType[]
+
+  @@map("activity_types")
+}
+
+// ============================================================
+// LISTINGS
+// ============================================================
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  ARCHIVED
+}
+
+enum PricingType {
+  PER_PERSON
+  FLAT_RATE
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
+model Listing {
+  id     String        @id @default(cuid())
+  hostId String
+  status ListingStatus @default(DRAFT)
+
+  title       String
+  description String @db.Text
+  slug        String @unique
+
+  // Pricing
+  pricePerPerson Decimal?    @db.Decimal(10, 2)
+  flatPrice      Decimal?    @db.Decimal(10, 2)
+  pricingType    PricingType @default(PER_PERSON)
+  currency       String      @default("USD")
+
+  // Capacity & Duration
+  minGuests       Int @default(1)
+  maxGuests       Int
+  durationMinutes Int
+
+  // Location
+  locationName String
+  address      String?
+  city         String
+  state        String?
+  country      String  @default("US")
+  latitude     Float
+  longitude    Float
+
+  // Boat Details
+  boatName         String?
+  boatType         String?
+  boatLength       Int?
+  boatCapacity     Int?
+  boatYear         Int?
+  boatManufacturer String?
+
+  // What's Included
+  includedItems    String[] @default([])
+  notIncludedItems String[] @default([])
+  requirements     String[] @default([])
+
+  cancellationPolicy CancellationPolicy @default(MODERATE)
+  instantBook        Boolean            @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  host          User                  @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  activityTypes ListingActivityType[]
+  photos        ListingPhoto[]
+  availability  AvailabilityRule[]
+  blockedDates  BlockedDate[]
+  bookings      Booking[]
+  reviews       Review[]
+
+  @@index([hostId])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([city])
+  @@map("listings")
+}
+
+model ListingActivityType {
+  listingId      String
+  activityTypeId String
+
+  listing      Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, activityTypeId])
+  @@map("listing_activity_types")
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listingId String
+  url       String
+  altText   String?
+  order     Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@map("listing_photos")
+}
+
+// ============================================================
+// AVAILABILITY
+// ============================================================
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model AvailabilityRule {
+  id        String @id @default(cuid())
+  listingId String
+
+  dayOfWeek DayOfWeek
+  startTime String
+  endTime   String
+
+  validFrom  DateTime?
+  validUntil DateTime?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@map("availability_rules")
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  listingId String
+  date      DateTime @db.Date
+  reason    String?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, date])
+  @@map("blocked_dates")
+}
+
+// ============================================================
+// BOOKINGS
+// ============================================================
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  COMPLETED
+  CANCELLED_GUEST
+  CANCELLED_HOST
+  REFUNDED
+  DISPUTED
+}
+
+model Booking {
+  id        String @id @default(cuid())
+  guestId   String
+  listingId String
+
+  date      DateTime @db.Date
+  startTime String
+  endTime   String
+
+  guestCount Int
+
+  // Pricing snapshot
+  pricePerUnit Decimal     @db.Decimal(10, 2)
+  pricingType  PricingType
+  subtotal     Decimal     @db.Decimal(10, 2)
+  serviceFee   Decimal     @db.Decimal(10, 2)
+  hostPayout   Decimal     @db.Decimal(10, 2)
+  totalPrice   Decimal     @db.Decimal(10, 2)
+  currency     String      @default("USD")
+
+  status BookingStatus @default(PENDING)
+
+  stripePaymentIntentId String? @unique
+  stripeTransferId      String?
+
+  messageToHost      String?   @db.Text
+  hostNotes          String?   @db.Text
+  cancelledAt        DateTime?
+  cancellationReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guest   User    @relation(fields: [guestId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+  review  Review?
+
+  @@index([guestId])
+  @@index([listingId])
+  @@index([date])
+  @@index([status])
+  @@map("bookings")
+}
+
+// ============================================================
+// REVIEWS
+// ============================================================
+
+model Review {
+  id        String @id @default(cuid())
+  bookingId String @unique
+  listingId String
+  authorId  String
+  hostId    String
+
+  rating              Int
+  comment             String? @db.Text
+  ratingAccuracy      Int?
+  ratingCommunication Int?
+  ratingValue         Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+  author  User    @relation("ReviewAuthor", fields: [authorId], references: [id])
+  host    User    @relation("ReviewSubject", fields: [hostId], references: [id])
+
+  @@index([listingId])
+  @@index([authorId])
+  @@index([hostId])
+  @@map("reviews")
+}
