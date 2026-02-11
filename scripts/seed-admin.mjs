@@ -1,6 +1,6 @@
 // Standalone admin user seeder — uses globally installed pg + bcryptjs
 // Runs on startup in Docker to ensure admin user exists
-// Note: Prisma 7 uses snake_case table/column names (users, first_name, etc.)
+// Note: Prisma 7 uses snake_case table names (users) but camelCase column names ("firstName")
 import { createRequire } from "module";
 import { randomBytes } from "crypto";
 
@@ -22,7 +22,7 @@ const pool = new pg.Pool({ connectionString: DATABASE_URL });
 
 try {
   const existing = await pool.query(
-    "SELECT id, role FROM users WHERE email = $1",
+    `SELECT id, role FROM users WHERE email = $1`,
     [email]
   );
 
@@ -30,7 +30,7 @@ try {
     if (existing.rows[0].role === "ADMIN") {
       console.log(`seed-admin: Admin user already exists (${email})`);
     } else {
-      await pool.query("UPDATE users SET role = $1 WHERE email = $2", [
+      await pool.query(`UPDATE users SET role = $1 WHERE email = $2`, [
         "ADMIN",
         email,
       ]);
@@ -41,7 +41,7 @@ try {
     const id = `cm${Date.now().toString(36)}${randomBytes(8).toString("hex")}`;
 
     await pool.query(
-      `INSERT INTO users (id, email, first_name, last_name, hashed_password, role, created_at, updated_at, stripe_onboarding_complete)
+      `INSERT INTO users (id, email, "firstName", "lastName", "hashedPassword", role, "createdAt", "updatedAt", "stripeOnboardingComplete")
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), false)`,
       [id, email, "Admin", "User", hashedPassword, "ADMIN"]
     );
