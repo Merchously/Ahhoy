@@ -10,6 +10,15 @@ RUN npm ci
 # ---- Stage 2: Build ----
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Next.js needs NEXT_PUBLIC_ vars at build time
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=placeholder
+ARG NEXT_PUBLIC_MAPBOX_TOKEN=placeholder
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_MAPBOX_TOKEN=$NEXT_PUBLIC_MAPBOX_TOKEN
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
