@@ -44,6 +44,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder /app/scripts/seed-admin.mjs ./scripts/seed-admin.mjs
+COPY --from=builder /app/scripts/seed-listings.mjs ./scripts/seed-listings.mjs
 
 # Create uploads directory
 RUN mkdir -p /app/public/uploads && chown nextjs:nodejs /app/public/uploads
@@ -56,4 +57,4 @@ ENV HOSTNAME="0.0.0.0"
 
 # Push schema + seed admin user on startup, then start the server
 # NODE_PATH includes global modules so scripts can find prisma/dotenv/bcryptjs/pg
-CMD ["sh", "-c", "export NODE_PATH=$(npm root -g); prisma db push 2>&1; node scripts/seed-admin.mjs 2>&1; node server.js"]
+CMD ["sh", "-c", "export NODE_PATH=$(npm root -g); prisma db push 2>&1; node scripts/seed-admin.mjs 2>&1; node scripts/seed-listings.mjs 2>&1; node server.js"]
