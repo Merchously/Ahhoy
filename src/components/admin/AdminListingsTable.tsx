@@ -28,10 +28,10 @@ type Listing = {
 const STATUSES = ["ALL", "DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"] as const;
 
 const statusBadgeClass: Record<string, string> = {
-  DRAFT: "bg-yellow-900/50 text-yellow-300 border-yellow-800",
-  PUBLISHED: "bg-green-900/50 text-green-300 border-green-800",
-  PAUSED: "bg-orange-900/50 text-orange-300 border-orange-800",
-  ARCHIVED: "bg-gray-800 text-gray-400 border-gray-700",
+  DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  PUBLISHED: "bg-green-50 text-green-700 border-green-200",
+  PAUSED: "bg-orange-50 text-orange-700 border-orange-200",
+  ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
 };
 
 export function AdminListingsTable() {
@@ -82,15 +82,15 @@ export function AdminListingsTable() {
       <div className="flex flex-col sm:flex-row gap-3">
         <form onSubmit={handleSearch} className="flex gap-2 flex-1">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search listings..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-gray-900 border-gray-700 text-white placeholder:text-gray-500"
+              className="pl-9 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-ocean focus:ring-ocean"
             />
           </div>
-          <Button type="submit" variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+          <Button type="submit" variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl">
             Search
           </Button>
         </form>
@@ -104,8 +104,8 @@ export function AdminListingsTable() {
               onClick={() => { setStatusFilter(s); setPage(1); }}
               className={
                 statusFilter === s
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                  ? "bg-ocean hover:bg-ocean/90 text-white rounded-full"
+                  : "border-gray-200 text-gray-500 hover:bg-gray-50 rounded-full"
               }
             >
               {s === "ALL" ? "All" : s}
@@ -115,49 +115,49 @@ export function AdminListingsTable() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-800 overflow-hidden">
+      <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-800 hover:bg-transparent">
-              <TableHead className="text-gray-400">Title</TableHead>
-              <TableHead className="text-gray-400">Host</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400">Location</TableHead>
-              <TableHead className="text-gray-400 text-center">Bookings</TableHead>
-              <TableHead className="text-gray-400">Created</TableHead>
-              <TableHead className="text-gray-400 text-right">Actions</TableHead>
+            <TableRow className="border-gray-100 bg-gray-50/50 hover:bg-gray-50/50">
+              <TableHead className="text-gray-500 font-medium">Title</TableHead>
+              <TableHead className="text-gray-500 font-medium">Host</TableHead>
+              <TableHead className="text-gray-500 font-medium">Status</TableHead>
+              <TableHead className="text-gray-500 font-medium">Location</TableHead>
+              <TableHead className="text-gray-500 font-medium text-center">Bookings</TableHead>
+              <TableHead className="text-gray-500 font-medium">Created</TableHead>
+              <TableHead className="text-gray-500 font-medium text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow className="border-gray-800">
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+              <TableRow className="border-gray-100">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : listings.length === 0 ? (
-              <TableRow className="border-gray-800">
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+              <TableRow className="border-gray-100">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   No listings found
                 </TableCell>
               </TableRow>
             ) : (
               listings.map((listing) => (
-                <TableRow key={listing.id} className="border-gray-800 hover:bg-gray-900/50">
-                  <TableCell className="text-white font-medium max-w-[200px] truncate">
+                <TableRow key={listing.id} className="border-gray-100 hover:bg-gray-50/50">
+                  <TableCell className="text-navy font-medium max-w-[200px] truncate">
                     {listing.title}
                   </TableCell>
-                  <TableCell className="text-gray-400">
+                  <TableCell className="text-gray-500">
                     {listing.host.firstName} {listing.host.lastName}
                   </TableCell>
                   <TableCell>
                     <select
                       value={listing.status}
                       onChange={(e) => handleStatusChange(listing.id, e.target.value)}
-                      className="bg-transparent text-xs rounded px-1 py-0.5 border-0 cursor-pointer"
+                      className="bg-transparent text-xs rounded px-1 py-0.5 border-0 cursor-pointer text-gray-600"
                     >
                       {["DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"].map((s) => (
-                        <option key={s} value={s} className="bg-gray-900">
+                        <option key={s} value={s}>
                           {s}
                         </option>
                       ))}
@@ -169,17 +169,17 @@ export function AdminListingsTable() {
                       {listing.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-gray-400">{listing.locationName}</TableCell>
-                  <TableCell className="text-gray-400 text-center">{listing._count.bookings}</TableCell>
-                  <TableCell className="text-gray-500 text-sm">
+                  <TableCell className="text-gray-500">{listing.locationName}</TableCell>
+                  <TableCell className="text-gray-500 text-center">{listing._count.bookings}</TableCell>
+                  <TableCell className="text-gray-400 text-sm">
                     {new Date(listing.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <a
-                      href={`/listings/${listing.slug}`}
+                      href={`/listings/${listing.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-gray-400 hover:text-white"
+                      className="inline-flex items-center text-gray-400 hover:text-ocean"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>
@@ -202,11 +202,11 @@ export function AdminListingsTable() {
             size="sm"
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
-            className="border-gray-700 text-gray-400 hover:bg-gray-800"
+            className="border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-500">
             {page} / {totalPages}
           </span>
           <Button
@@ -214,7 +214,7 @@ export function AdminListingsTable() {
             size="sm"
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
-            className="border-gray-700 text-gray-400 hover:bg-gray-800"
+            className="border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

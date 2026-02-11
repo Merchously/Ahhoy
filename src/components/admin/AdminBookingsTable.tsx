@@ -38,14 +38,14 @@ const STATUSES = [
 ] as const;
 
 const statusBadgeClass: Record<string, string> = {
-  PENDING: "bg-yellow-900/50 text-yellow-300 border-yellow-800",
-  CONFIRMED: "bg-blue-900/50 text-blue-300 border-blue-800",
-  PAID: "bg-green-900/50 text-green-300 border-green-800",
-  COMPLETED: "bg-emerald-900/50 text-emerald-300 border-emerald-800",
-  CANCELLED_GUEST: "bg-red-900/50 text-red-300 border-red-800",
-  CANCELLED_HOST: "bg-red-900/50 text-red-300 border-red-800",
-  REFUNDED: "bg-purple-900/50 text-purple-300 border-purple-800",
-  DISPUTED: "bg-orange-900/50 text-orange-300 border-orange-800",
+  PENDING: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  CONFIRMED: "bg-blue-50 text-blue-700 border-blue-200",
+  PAID: "bg-green-50 text-green-700 border-green-200",
+  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  CANCELLED_GUEST: "bg-red-50 text-red-700 border-red-200",
+  CANCELLED_HOST: "bg-red-50 text-red-700 border-red-200",
+  REFUNDED: "bg-purple-50 text-purple-700 border-purple-200",
+  DISPUTED: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 export function AdminBookingsTable() {
@@ -85,8 +85,8 @@ export function AdminBookingsTable() {
             onClick={() => { setStatusFilter(s); setPage(1); }}
             className={
               statusFilter === s
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                ? "bg-ocean hover:bg-ocean/90 text-white rounded-full"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50 rounded-full"
             }
           >
             {s === "ALL" ? "All" : s.replace("_", " ")}
@@ -95,49 +95,49 @@ export function AdminBookingsTable() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-800 overflow-hidden">
+      <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-800 hover:bg-transparent">
-              <TableHead className="text-gray-400">Listing</TableHead>
-              <TableHead className="text-gray-400">Guest</TableHead>
-              <TableHead className="text-gray-400">Date</TableHead>
-              <TableHead className="text-gray-400 text-center">Guests</TableHead>
-              <TableHead className="text-gray-400 text-right">Total</TableHead>
-              <TableHead className="text-gray-400 text-right">Fee</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
+            <TableRow className="border-gray-100 bg-gray-50/50 hover:bg-gray-50/50">
+              <TableHead className="text-gray-500 font-medium">Listing</TableHead>
+              <TableHead className="text-gray-500 font-medium">Guest</TableHead>
+              <TableHead className="text-gray-500 font-medium">Date</TableHead>
+              <TableHead className="text-gray-500 font-medium text-center">Guests</TableHead>
+              <TableHead className="text-gray-500 font-medium text-right">Total</TableHead>
+              <TableHead className="text-gray-500 font-medium text-right">Fee</TableHead>
+              <TableHead className="text-gray-500 font-medium">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow className="border-gray-800">
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+              <TableRow className="border-gray-100">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : bookings.length === 0 ? (
-              <TableRow className="border-gray-800">
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+              <TableRow className="border-gray-100">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   No bookings found
                 </TableCell>
               </TableRow>
             ) : (
               bookings.map((booking) => (
-                <TableRow key={booking.id} className="border-gray-800 hover:bg-gray-900/50">
-                  <TableCell className="text-white font-medium max-w-[200px] truncate">
+                <TableRow key={booking.id} className="border-gray-100 hover:bg-gray-50/50">
+                  <TableCell className="text-navy font-medium max-w-[200px] truncate">
                     {booking.listing.title}
                   </TableCell>
-                  <TableCell className="text-gray-400">
+                  <TableCell className="text-gray-500">
                     {booking.guest.firstName} {booking.guest.lastName}
                   </TableCell>
-                  <TableCell className="text-gray-400">
+                  <TableCell className="text-gray-500">
                     {new Date(booking.date).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-gray-400 text-center">{booking.guestCount}</TableCell>
-                  <TableCell className="text-gray-300 text-right">
+                  <TableCell className="text-gray-500 text-center">{booking.guestCount}</TableCell>
+                  <TableCell className="text-navy font-medium text-right">
                     ${Number(booking.subtotal).toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-gray-500 text-right">
+                  <TableCell className="text-gray-400 text-right">
                     ${Number(booking.serviceFee).toFixed(2)}
                   </TableCell>
                   <TableCell>
@@ -166,11 +166,11 @@ export function AdminBookingsTable() {
             size="sm"
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
-            className="border-gray-700 text-gray-400 hover:bg-gray-800"
+            className="border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-500">
             {page} / {totalPages}
           </span>
           <Button
@@ -178,7 +178,7 @@ export function AdminBookingsTable() {
             size="sm"
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
-            className="border-gray-700 text-gray-400 hover:bg-gray-800"
+            className="border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

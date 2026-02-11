@@ -14,7 +14,7 @@ export default async function AdminListingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Listings</h1>
+      <h1 className="text-2xl font-bold text-navy mb-6">Listings</h1>
       <AdminListingsTable />
     </div>
   );
