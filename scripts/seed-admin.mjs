@@ -1,5 +1,6 @@
 // Standalone admin user seeder — uses globally installed pg + bcryptjs
 // Runs on startup in Docker to ensure admin user exists
+// Note: Prisma 7 uses snake_case table/column names (users, first_name, etc.)
 import { createRequire } from "module";
 import { randomBytes } from "crypto";
 
@@ -20,14 +21,8 @@ const password = process.env.ADMIN_PASSWORD || "AdminPass123!";
 const pool = new pg.Pool({ connectionString: DATABASE_URL });
 
 try {
-  // Debug: list all tables to verify prisma db push worked
-  const tables = await pool.query(
-    "SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name"
-  );
-  console.log("seed-admin: Tables found:", tables.rows.map(r => `${r.table_schema}.${r.table_name}`).join(", ") || "(none)");
-
   const existing = await pool.query(
-    'SELECT id, role FROM "User" WHERE email = $1',
+    "SELECT id, role FROM users WHERE email = $1",
     [email]
   );
 
@@ -35,7 +30,7 @@ try {
     if (existing.rows[0].role === "ADMIN") {
       console.log(`seed-admin: Admin user already exists (${email})`);
     } else {
-      await pool.query('UPDATE "User" SET role = $1 WHERE email = $2', [
+      await pool.query("UPDATE users SET role = $1 WHERE email = $2", [
         "ADMIN",
         email,
       ]);
@@ -46,7 +41,7 @@ try {
     const id = `cm${Date.now().toString(36)}${randomBytes(8).toString("hex")}`;
 
     await pool.query(
-      `INSERT INTO "User" (id, email, "firstName", "lastName", "hashedPassword", role, "createdAt", "updatedAt", "stripeOnboardingComplete")
+      `INSERT INTO users (id, email, first_name, last_name, hashed_password, role, created_at, updated_at, stripe_onboarding_complete)
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), false)`,
       [id, email, "Admin", "User", hashedPassword, "ADMIN"]
     );
