@@ -1,8 +1,11 @@
-// Standalone admin user seeder — uses pg + bcryptjs directly (both in standalone bundle)
+// Standalone admin user seeder — uses pg + bcryptjs from the app's node_modules
 // Runs on startup in Docker to ensure admin user exists
-import pg from "pg";
-import bcrypt from "bcryptjs";
+import { createRequire } from "module";
 import { randomBytes } from "crypto";
+
+const require = createRequire(import.meta.url.replace("/scripts/", "/"));
+const pg = require("pg");
+const bcrypt = require("bcryptjs");
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
