@@ -14,14 +14,14 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
 const activityTypes = [
-  { slug: "fishing", label: "Fishing Trips", image: "https://picsum.photos/seed/ahhoy-fishing/600/800" },
-  { slug: "jet-ski", label: "Jet Ski Adventures", image: "https://picsum.photos/seed/ahhoy-jetski/600/800" },
-  { slug: "yacht-party", label: "Yacht Parties", image: "https://picsum.photos/seed/ahhoy-yacht/600/800" },
-  { slug: "sunset-cruise", label: "Sunset Cruises", image: "https://picsum.photos/seed/ahhoy-sunset/600/800" },
-  { slug: "snorkeling-diving", label: "Snorkeling & Diving", image: "https://picsum.photos/seed/ahhoy-snorkel/600/800" },
-  { slug: "wakeboarding", label: "Watersports", image: "https://picsum.photos/seed/ahhoy-watersport/600/800" },
-  { slug: "boat-rental", label: "Boat Rentals", image: "https://picsum.photos/seed/ahhoy-boat/600/800" },
-  { slug: "custom", label: "Custom Experiences", image: "https://picsum.photos/seed/ahhoy-custom/600/800" },
+  { slug: "fishing", label: "Fishing Trips", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=800&fit=crop" },
+  { slug: "jet-ski", label: "Jet Ski Adventures", image: "https://images.unsplash.com/photo-1626447857058-2ba6a8868cb5?w=600&h=800&fit=crop" },
+  { slug: "yacht-party", label: "Yacht Parties", image: "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=600&h=800&fit=crop" },
+  { slug: "sunset-cruise", label: "Sunset Cruises", image: "https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&h=800&fit=crop" },
+  { slug: "snorkeling-diving", label: "Snorkeling & Diving", image: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=600&h=800&fit=crop" },
+  { slug: "wakeboarding", label: "Watersports", image: "https://images.unsplash.com/photo-1530053969600-caed2596d242?w=600&h=800&fit=crop" },
+  { slug: "boat-rental", label: "Boat Rentals", image: "https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=600&h=800&fit=crop" },
+  { slug: "custom", label: "Custom Experiences", image: "https://images.unsplash.com/photo-1476673160081-cf065607f449?w=600&h=800&fit=crop" },
 ];
 
 const featuredExperiences = [
@@ -29,7 +29,7 @@ const featuredExperiences = [
     title: "Deep Sea Fishing Charter",
     location: "Miami, FL",
     price: 189,
-    image: "https://picsum.photos/seed/ahhoy-feat1/800/600",
+    image: "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800&h=600&fit=crop",
     rating: 4.9,
     reviews: 47,
   },
@@ -37,7 +37,7 @@ const featuredExperiences = [
     title: "Sunset Catamaran Cruise",
     location: "Key West, FL",
     price: 95,
-    image: "https://picsum.photos/seed/ahhoy-feat2/800/600",
+    image: "https://images.unsplash.com/photo-1534256958597-7fe685cbd745?w=800&h=600&fit=crop",
     rating: 4.8,
     reviews: 83,
   },
@@ -45,7 +45,7 @@ const featuredExperiences = [
     title: "Private Yacht Experience",
     location: "San Diego, CA",
     price: 450,
-    image: "https://picsum.photos/seed/ahhoy-feat3/800/600",
+    image: "https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&h=600&fit=crop",
     rating: 5.0,
     reviews: 21,
   },
@@ -151,8 +151,8 @@ export default function HomePage() {
               <div className="hidden md:grid grid-cols-2 gap-4 h-[500px]">
                 <div className="relative rounded-3xl overflow-hidden row-span-2">
                   <Image
-                    src="https://picsum.photos/seed/ahhoy-hero1/800/1000"
-                    alt="Water experience"
+                    src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=1000&fit=crop"
+                    alt="Fishing boat on open water"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 50vw, 25vw"
@@ -161,8 +161,8 @@ export default function HomePage() {
                 </div>
                 <div className="relative rounded-2xl overflow-hidden">
                   <Image
-                    src="https://picsum.photos/seed/ahhoy-hero2/600/400"
-                    alt="Boat adventure"
+                    src="https://images.unsplash.com/photo-1559825481-12a05cc00344?w=600&h=400&fit=crop"
+                    alt="Turquoise ocean aerial view"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 50vw, 25vw"
@@ -171,8 +171,8 @@ export default function HomePage() {
                 </div>
                 <div className="relative rounded-2xl overflow-hidden">
                   <Image
-                    src="https://picsum.photos/seed/ahhoy-hero3/600/400"
-                    alt="Ocean sunset"
+                    src="https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&h=400&fit=crop"
+                    alt="Sunset over the ocean"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 50vw, 25vw"
@@ -288,8 +288,8 @@ export default function HomePage() {
               {/* Image */}
               <div className="hidden lg:block relative aspect-[4/5] rounded-3xl overflow-hidden">
                 <Image
-                  src="https://picsum.photos/seed/ahhoy-howit/800/1000"
-                  alt="How Ahhoy works"
+                  src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&h=1000&fit=crop"
+                  alt="People enjoying a boat ride"
                   fill
                   className="object-cover"
                   sizes="50vw"
@@ -432,8 +432,8 @@ export default function HomePage() {
 
               <div className="hidden lg:block relative aspect-[4/3] rounded-3xl overflow-hidden">
                 <Image
-                  src="https://picsum.photos/seed/ahhoy-host/800/600"
-                  alt="Become a host on Ahhoy"
+                  src="https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&h=600&fit=crop"
+                  alt="Captain steering a yacht"
                   fill
                   className="object-cover"
                   sizes="50vw"
