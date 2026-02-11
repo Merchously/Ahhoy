@@ -55,4 +55,4 @@ ENV HOSTNAME="0.0.0.0"
 
 # Push schema to database on startup, then start the server
 # NODE_PATH includes global modules so prisma.config.ts can find dotenv
-CMD ["sh", "-c", "NODE_PATH=$(npm root -g) prisma db push --skip-generate 2>&1; node server.js"]
+CMD ["sh", "-c", "NODE_PATH=$(npm root -g) prisma db push 2>&1; node server.js"]
