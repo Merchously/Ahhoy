@@ -20,6 +20,12 @@ const password = process.env.ADMIN_PASSWORD || "AdminPass123!";
 const pool = new pg.Pool({ connectionString: DATABASE_URL });
 
 try {
+  // Debug: list all tables to verify prisma db push worked
+  const tables = await pool.query(
+    "SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name"
+  );
+  console.log("seed-admin: Tables found:", tables.rows.map(r => `${r.table_schema}.${r.table_name}`).join(", ") || "(none)");
+
   const existing = await pool.query(
     'SELECT id, role FROM "User" WHERE email = $1',
     [email]
