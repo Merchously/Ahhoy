@@ -31,8 +31,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install prisma CLI for database migrations on startup
-RUN npm install -g prisma dotenv
+# Install prisma CLI + bcryptjs for database migrations and admin seeding on startup
+RUN npm install -g prisma dotenv bcryptjs pg
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -55,5 +55,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Push schema + seed admin user on startup, then start the server
-# NODE_PATH includes global modules so prisma.config.ts can find dotenv
-CMD ["sh", "-c", "NODE_PATH=$(npm root -g) prisma db push 2>&1; node scripts/seed-admin.mjs 2>&1; node server.js"]
+# NODE_PATH includes global modules so scripts can find prisma/dotenv/bcryptjs/pg
+CMD ["sh", "-c", "export NODE_PATH=$(npm root -g); prisma db push 2>&1; node scripts/seed-admin.mjs 2>&1; node server.js"]

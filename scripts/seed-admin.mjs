@@ -1,9 +1,10 @@
-// Standalone admin user seeder — uses pg + bcryptjs from the app's node_modules
+// Standalone admin user seeder — uses globally installed pg + bcryptjs
 // Runs on startup in Docker to ensure admin user exists
 import { createRequire } from "module";
 import { randomBytes } from "crypto";
 
-const require = createRequire(import.meta.url.replace("/scripts/", "/"));
+// Use createRequire so ESM can load CJS packages from NODE_PATH
+const require = createRequire(import.meta.url);
 const pg = require("pg");
 const bcrypt = require("bcryptjs");
 
