@@ -5,5 +5,6 @@ export const config = {
     "/dashboard/:path*",
     "/bookings/:path*",
     "/profile",
+    "/admin/:path*",
   ],
 };
