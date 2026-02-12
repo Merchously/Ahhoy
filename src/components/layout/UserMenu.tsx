@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LayoutDashboard, CalendarDays, LogOut } from "lucide-react";
+import { User, LayoutDashboard, CalendarDays, LogOut, ShieldCheck } from "lucide-react";
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -52,6 +52,14 @@ export function UserMenu() {
             <Link href="/dashboard">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {session.user.role === "ADMIN" && (
+          <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+            <Link href="/admin">
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Admin Dashboard
             </Link>
           </DropdownMenuItem>
         )}

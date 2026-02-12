@@ -39,7 +39,15 @@ export function Navbar() {
 
         {/* Right: Nav items */}
         <div className="flex items-center gap-3">
-          {session?.user?.role !== "HOST" && (
+          {session?.user?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition-colors"
+            >
+              Admin
+            </Link>
+          )}
+          {session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN" && (
             <Link
               href="/become-a-host"
               className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition-colors"
@@ -123,6 +131,15 @@ export function Navbar() {
                         onClick={() => setOpen(false)}
                       >
                         Dashboard
+                      </Link>
+                    )}
+                    {session.user.role === "ADMIN" && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium hover:bg-gray-50 transition-colors"
+                        onClick={() => setOpen(false)}
+                      >
+                        Admin Dashboard
                       </Link>
                     )}
                   </>
