@@ -7,6 +7,7 @@ import {
   Ship,
   CalendarDays,
   DollarSign,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/dashboard/listings", label: "My Listings", icon: Ship },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign },
+  { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
 export function DashboardSidebar() {

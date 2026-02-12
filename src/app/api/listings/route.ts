@@ -171,6 +171,12 @@ export async function POST(request: Request) {
       .replace(/^-|-$/g, "");
     const slug = `${baseSlug}-${Date.now().toString(36)}`;
 
+    // Resolve activity type slugs to actual database IDs
+    const activityTypes = await prisma.activityType.findMany({
+      where: { slug: { in: data.activityTypeIds } },
+      select: { id: true },
+    });
+
     const listing = await prisma.listing.create({
       data: {
         hostId: session.user.id,
@@ -203,8 +209,8 @@ export async function POST(request: Request) {
         cancellationPolicy: data.cancellationPolicy,
         instantBook: data.instantBook,
         activityTypes: {
-          create: data.activityTypeIds.map((id) => ({
-            activityTypeId: id,
+          create: activityTypes.map((at) => ({
+            activityTypeId: at.id,
           })),
         },
         status: "DRAFT",

@@ -15,16 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Check, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { ACTIVITY_TYPES, BOAT_TYPES } from "@/lib/constants";
 
-const steps = ["Basic Info", "Location", "Boat Details", "Pricing", "Review"];
+const steps = ["Basic Info", "Location", "Boat Details", "Photos", "Pricing", "Review"];
 
 export default function NewListingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -40,6 +41,7 @@ export default function NewListingPage() {
     boatLength: "",
     boatYear: "",
     boatManufacturer: "",
+    photos: [] as string[],
     pricingType: "PER_PERSON" as "PER_PERSON" | "FLAT_RATE",
     pricePerPerson: "",
     flatPrice: "",
@@ -61,6 +63,48 @@ export default function NewListingPage() {
       activityTypeIds: prev.activityTypeIds.includes(id)
         ? prev.activityTypeIds.filter((i) => i !== id)
         : [...prev.activityTypeIds, id],
+    }));
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files?.length) return;
+
+    const remaining = 10 - form.photos.length;
+    const toUpload = Array.from(files).slice(0, remaining);
+
+    if (toUpload.length === 0) {
+      toast.error("Maximum 10 photos allowed");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      for (const file of toUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (res.ok) {
+          const { url } = await res.json();
+          setForm((prev) => ({ ...prev, photos: [...prev.photos, url] }));
+        } else {
+          const data = await res.json();
+          toast.error(data.error || "Failed to upload photo");
+        }
+      }
+    } catch {
+      toast.error("Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+      // Reset the input so the same file can be selected again
+      e.target.value = "";
+    }
+  }
+
+  function removePhoto(index: number) {
+    setForm((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
     }));
   }
 
@@ -110,6 +154,28 @@ export default function NewListingPage() {
         toast.error(data.error || "Failed to create listing");
         setLoading(false);
         return;
+      }
+
+      const listing = await res.json();
+
+      // Save photos to the listing
+      if (form.photos.length > 0) {
+        const photosRes = await fetch(`/api/listings/${listing.id}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            photos: form.photos.map((url, i) => ({
+              url,
+              order: i,
+              isPrimary: i === 0,
+            })),
+          }),
+        });
+
+        if (!photosRes.ok) {
+          // Listing was created but photos failed — still redirect, just warn
+          toast.warning("Listing created but some photos could not be saved.");
+        }
       }
 
       toast.success("Listing created! You can now publish it.");
@@ -307,8 +373,75 @@ export default function NewListingPage() {
             </>
           )}
 
-          {/* Step 3: Pricing */}
+          {/* Step 3: Photos */}
           {step === 3 && (
+            <>
+              <div className="space-y-2">
+                <Label>Photos (up to 10)</Label>
+                <p className="text-sm text-gray-500">
+                  The first photo will be the cover image. Max 5MB per file (JPEG, PNG, WebP, GIF).
+                </p>
+              </div>
+
+              {form.photos.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {form.photos.map((url, i) => (
+                    <div
+                      key={url}
+                      className="relative aspect-[4/3] rounded-lg overflow-hidden group"
+                    >
+                      <img
+                        src={url}
+                        alt={`Photo ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {i === 0 && (
+                        <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(i)}
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {form.photos.length < 10 && (
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
+                  {uploadingPhoto ? (
+                    <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+                  ) : (
+                    <Upload className="h-8 w-8 text-gray-400" />
+                  )}
+                  <span className="text-sm text-gray-500 mt-2">
+                    {uploadingPhoto
+                      ? "Uploading..."
+                      : "Click to upload photos"}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1">
+                    {form.photos.length}/10 photos
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    multiple
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                    disabled={uploadingPhoto}
+                  />
+                </label>
+              )}
+            </>
+          )}
+
+          {/* Step 4: Pricing */}
+          {step === 4 && (
             <>
               <div className="space-y-2">
                 <Label>Pricing Type</Label>
@@ -416,8 +549,8 @@ export default function NewListingPage() {
             </>
           )}
 
-          {/* Step 4: Review */}
-          {step === 4 && (
+          {/* Step 5: Review */}
+          {step === 5 && (
             <div className="space-y-3 text-sm">
               <p><strong>Title:</strong> {form.title}</p>
               <p><strong>Description:</strong> {form.description.slice(0, 100)}...</p>
@@ -431,6 +564,24 @@ export default function NewListingPage() {
               <p><strong>Duration:</strong> {form.durationMinutes} min</p>
               <p><strong>Guests:</strong> {form.minGuests}-{form.maxGuests}</p>
               {form.boatName && <p><strong>Boat:</strong> {form.boatName} ({form.boatType})</p>}
+              <p>
+                <strong>Photos:</strong>{" "}
+                {form.photos.length > 0
+                  ? `${form.photos.length} photo${form.photos.length !== 1 ? "s" : ""}`
+                  : "None"}
+              </p>
+              {form.photos.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto py-1">
+                  {form.photos.map((url, i) => (
+                    <img
+                      key={url}
+                      src={url}
+                      alt={`Photo ${i + 1}`}
+                      className="w-16 h-12 rounded object-cover flex-shrink-0"
+                    />
+                  ))}
+                </div>
+              )}
               <p className="text-muted-foreground mt-4">
                 Your listing will be saved as a draft. You can publish it from your listings page.
               </p>

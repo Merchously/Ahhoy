@@ -4,14 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Edit, MoreVertical } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ListingStatusToggle } from "@/components/listings/listing-status-toggle";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -80,6 +75,15 @@ export default async function ListingsPage() {
               className="rounded-xl shadow-sm border-gray-100 bg-white hover:shadow-md transition-shadow"
             >
               <CardContent className="flex items-center gap-4 p-5">
+                {listing.photos[0]?.url && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={listing.photos[0].url}
+                      alt={listing.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <h3 className="font-semibold text-gray-900">
@@ -97,29 +101,10 @@ export default async function ListingsPage() {
                   </p>
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-lg">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl">
-                    <DropdownMenuItem asChild className="rounded-lg">
-                      <Link href={`/listings/${listing.id}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-lg">
-                      <Link
-                        href={`/dashboard/listings/${listing.id}/edit`}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <ListingStatusToggle
+                  listingId={listing.id}
+                  currentStatus={listing.status}
+                />
               </CardContent>
             </Card>
           ))}
