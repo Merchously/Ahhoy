@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { prisma } from "@/lib/prisma";
 
 const activityTypes = [
   { slug: "fishing", label: "Fishing Trips", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=800&fit=crop" },
@@ -22,33 +25,6 @@ const activityTypes = [
   { slug: "wakeboarding", label: "Watersports", image: "https://images.unsplash.com/photo-1530053969600-caed2596d242?w=600&h=800&fit=crop" },
   { slug: "boat-rental", label: "Boat Rentals", image: "https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=600&h=800&fit=crop" },
   { slug: "custom", label: "Custom Experiences", image: "https://images.unsplash.com/photo-1476673160081-cf065607f449?w=600&h=800&fit=crop" },
-];
-
-const featuredExperiences = [
-  {
-    title: "Deep Sea Fishing Charter",
-    location: "Miami, FL",
-    price: 189,
-    image: "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800&h=600&fit=crop",
-    rating: 4.9,
-    reviews: 47,
-  },
-  {
-    title: "Sunset Catamaran Cruise",
-    location: "Key West, FL",
-    price: 95,
-    image: "https://images.unsplash.com/photo-1534256958597-7fe685cbd745?w=800&h=600&fit=crop",
-    rating: 4.8,
-    reviews: 83,
-  },
-  {
-    title: "Private Yacht Experience",
-    location: "San Diego, CA",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&h=600&fit=crop",
-    rating: 5.0,
-    reviews: 21,
-  },
 ];
 
 const steps = [
@@ -109,7 +85,40 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch top-rated published listings for the featured section
+  const featuredListings = await prisma.listing.findMany({
+    where: { status: "PUBLISHED" },
+    include: {
+      photos: { where: { isPrimary: true }, take: 1 },
+      reviews: { select: { rating: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+
+  // Sort by rating (highest avg first), then pick top 3
+  const featured = featuredListings
+    .map((l) => ({
+      id: l.id,
+      title: l.title,
+      location: l.locationName || l.city || "",
+      price: l.pricePerPerson ? Number(l.pricePerPerson) : l.flatPrice ? Number(l.flatPrice) : 0,
+      pricingType: l.pricingType,
+      image: l.photos[0]?.url || "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop",
+      rating: l.reviews.length > 0
+        ? Math.round((l.reviews.reduce((sum, r) => sum + r.rating, 0) / l.reviews.length) * 10) / 10
+        : null,
+      reviews: l.reviews.length,
+    }))
+    .sort((a, b) => {
+      if (a.reviews === 0 && b.reviews === 0) return 0;
+      if (a.reviews === 0) return 1;
+      if (b.reviews === 0) return -1;
+      return (b.rating || 0) - (a.rating || 0);
+    })
+    .slice(0, 3);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -236,8 +245,8 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredExperiences.map((exp) => (
-                <Link key={exp.title} href="/search">
+              {featured.map((exp) => (
+                <Link key={exp.id} href={`/listings/${exp.id}`}>
                   <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
@@ -260,18 +269,20 @@ export default function HomePage() {
                         <span className="text-navy font-bold text-lg">
                           ${exp.price}
                           <span className="text-gray-400 font-normal text-sm">
-                            {" "}/ person
+                            {exp.pricingType === "PER_PERSON" ? " / person" : " total"}
                           </span>
                         </span>
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="font-medium text-gray-900">
-                            {exp.rating}
-                          </span>
-                          <span className="text-gray-400">
-                            ({exp.reviews})
-                          </span>
-                        </div>
+                        {exp.rating && (
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            <span className="font-medium text-gray-900">
+                              {exp.rating}
+                            </span>
+                            <span className="text-gray-400">
+                              ({exp.reviews})
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
