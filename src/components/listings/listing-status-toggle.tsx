@@ -13,10 +13,11 @@ import {
   Eye,
   Edit,
   MoreVertical,
-  Globe,
+  Send,
   Pause,
   Trash2,
   Loader2,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -48,8 +49,8 @@ export function ListingStatusToggle({
       }
 
       toast.success(
-        newStatus === "PUBLISHED"
-          ? "Listing published!"
+        newStatus === "PENDING_REVIEW"
+          ? "Submitted for review!"
           : newStatus === "PAUSED"
             ? "Listing paused"
             : "Listing archived"
@@ -89,11 +90,18 @@ export function ListingStatusToggle({
 
         {currentStatus === "DRAFT" && (
           <DropdownMenuItem
-            className="rounded-lg text-green-600"
-            onClick={() => updateStatus("PUBLISHED")}
+            className="rounded-lg text-ocean"
+            onClick={() => updateStatus("PENDING_REVIEW")}
           >
-            <Globe className="mr-2 h-4 w-4" />
-            Publish
+            <Send className="mr-2 h-4 w-4" />
+            Submit for Review
+          </DropdownMenuItem>
+        )}
+
+        {currentStatus === "PENDING_REVIEW" && (
+          <DropdownMenuItem disabled className="rounded-lg text-blue-500">
+            <Clock className="mr-2 h-4 w-4" />
+            Under Review
           </DropdownMenuItem>
         )}
 
@@ -109,15 +117,15 @@ export function ListingStatusToggle({
 
         {currentStatus === "PAUSED" && (
           <DropdownMenuItem
-            className="rounded-lg text-green-600"
-            onClick={() => updateStatus("PUBLISHED")}
+            className="rounded-lg text-ocean"
+            onClick={() => updateStatus("PENDING_REVIEW")}
           >
-            <Globe className="mr-2 h-4 w-4" />
-            Republish
+            <Send className="mr-2 h-4 w-4" />
+            Resubmit for Review
           </DropdownMenuItem>
         )}
 
-        {currentStatus !== "ARCHIVED" && (
+        {currentStatus !== "ARCHIVED" && currentStatus !== "PENDING_REVIEW" && (
           <DropdownMenuItem
             className="rounded-lg text-red-600"
             onClick={() => updateStatus("ARCHIVED")}

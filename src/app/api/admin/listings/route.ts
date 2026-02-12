@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     ];
   }
 
-  if (status && ["DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"].includes(status)) {
+  if (status && ["DRAFT", "PENDING_REVIEW", "PUBLISHED", "PAUSED", "ARCHIVED"].includes(status)) {
     where.status = status as Prisma.EnumListingStatusFilter["equals"];
   }
 

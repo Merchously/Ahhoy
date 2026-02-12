@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, ArrowLeft, Save, Upload, X, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Save, X, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { ACTIVITY_TYPES, BOAT_TYPES } from "@/lib/constants";
+import { PhotoUploadZone } from "@/components/shared/PhotoUploadZone";
 import Link from "next/link";
 
 interface ListingPhoto {
@@ -128,45 +129,32 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
     }));
   }
 
-  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files?.length) return;
-
-    setUploadingPhoto(true);
+  async function handlePhotosUploaded(urls: string[]) {
     try {
-      for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        if (res.ok) {
-          const { url } = await res.json();
-          // Save to listing photos API
-          const photoRes = await fetch(`/api/listings/${id}/photos`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              photos: [{
-                url,
-                order: photos.length,
-                isPrimary: photos.length === 0,
-              }],
-            }),
-          });
-          if (photoRes.ok) {
-            setPhotos(prev => [...prev, {
-              id: `temp-${Date.now()}`,
+      for (const url of urls) {
+        const photoRes = await fetch(`/api/listings/${id}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            photos: [{
               url,
-              order: prev.length,
-              isPrimary: prev.length === 0,
-            }]);
-          }
+              order: photos.length,
+              isPrimary: photos.length === 0,
+            }],
+          }),
+        });
+        if (photoRes.ok) {
+          setPhotos(prev => [...prev, {
+            id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            url,
+            order: prev.length,
+            isPrimary: prev.length === 0,
+          }]);
         }
       }
       toast.success("Photos uploaded");
     } catch {
-      toast.error("Failed to upload photo");
-    } finally {
-      setUploadingPhoto(false);
+      toast.error("Failed to save photos");
     }
   }
 
@@ -182,6 +170,24 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
     } catch {
       toast.error("Failed to remove photo");
     }
+  }
+
+  function handlePhotoDragStart(e: React.DragEvent, index: number) {
+    e.dataTransfer.setData("text/plain", String(index));
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function handlePhotoDrop(e: React.DragEvent, targetIndex: number) {
+    e.preventDefault();
+    const sourceIndex = Number(e.dataTransfer.getData("text/plain"));
+    if (sourceIndex === targetIndex) return;
+
+    setPhotos((prev) => {
+      const newPhotos = [...prev];
+      const [moved] = newPhotos.splice(sourceIndex, 1);
+      newPhotos.splice(targetIndex, 0, moved);
+      return newPhotos.map((p, i) => ({ ...p, order: i, isPrimary: i === 0 }));
+    });
   }
 
   async function handleSave() {
@@ -312,46 +318,48 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg">Photos</CardTitle>
+            <p className="text-sm text-gray-500">Drag to reorder. First photo is the cover.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {photos.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {photos.map((photo, i) => (
-                  <div key={photo.id} className="relative aspect-[4/3] rounded-lg overflow-hidden group">
+                  <div
+                    key={photo.id}
+                    draggable
+                    onDragStart={(e) => handlePhotoDragStart(e, i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handlePhotoDrop(e, i)}
+                    className="relative aspect-[4/3] rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing"
+                  >
                     <img src={photo.url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                    {photo.isPrimary && (
+                    {i === 0 && (
                       <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">Cover</span>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(photo.id)}
-                      className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                        <GripVertical className="h-3 w-3" />
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(photo.id)}
+                        className="bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
             {photos.length < 10 && (
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
-                {uploadingPhoto ? (
-                  <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
-                ) : (
-                  <Upload className="h-8 w-8 text-gray-400" />
-                )}
-                <span className="text-sm text-gray-500 mt-2">
-                  {uploadingPhoto ? "Uploading..." : "Click to upload photos"}
-                </span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  multiple
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                  disabled={uploadingPhoto}
-                />
-              </label>
+              <PhotoUploadZone
+                onUpload={handlePhotosUploaded}
+                maxPhotos={10}
+                currentCount={photos.length}
+                uploading={uploadingPhoto}
+                setUploading={setUploadingPhoto}
+              />
             )}
           </CardContent>
         </Card>

@@ -2,7 +2,9 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Ship, CalendarDays, DollarSign, UserPlus } from "lucide-react";
+import { Users, Ship, CalendarDays, DollarSign, UserPlus, ClipboardCheck } from "lucide-react";
+import { PendingReviewActions } from "@/components/admin/PendingReviewActions";
+import Link from "next/link";
 
 export const metadata = {
   title: "Admin Dashboard | Ahhoy",
@@ -21,9 +23,11 @@ export default async function AdminOverviewPage() {
     adminCount,
     publishedListings,
     totalListings,
+    pendingReviewCount,
     totalBookings,
     revenueResult,
     recentUsers,
+    pendingListings,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: "GUEST" } }),
@@ -31,12 +35,27 @@ export default async function AdminOverviewPage() {
     prisma.user.count({ where: { role: "ADMIN" } }),
     prisma.listing.count({ where: { status: "PUBLISHED" } }),
     prisma.listing.count(),
+    prisma.listing.count({ where: { status: "PENDING_REVIEW" } }),
     prisma.booking.count(),
     prisma.booking.aggregate({ _sum: { serviceFee: true } }),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       select: { id: true, firstName: true, lastName: true, email: true, role: true, createdAt: true },
+    }),
+    prisma.listing.findMany({
+      where: { status: "PENDING_REVIEW" },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        locationName: true,
+        createdAt: true,
+        host: {
+          select: { firstName: true, lastName: true },
+        },
+      },
     }),
   ]);
 
@@ -51,6 +70,13 @@ export default async function AdminOverviewPage() {
       color: "bg-ocean/10 text-ocean",
     },
     {
+      label: "Pending Review",
+      value: pendingReviewCount,
+      icon: ClipboardCheck,
+      sub: "Listings awaiting approval",
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
       label: "Published Listings",
       value: publishedListings,
       icon: Ship,
@@ -58,16 +84,10 @@ export default async function AdminOverviewPage() {
       color: "bg-green-50 text-green-600",
     },
     {
-      label: "Total Bookings",
-      value: totalBookings,
-      icon: CalendarDays,
-      color: "bg-amber-50 text-amber-600",
-    },
-    {
       label: "Platform Revenue",
       value: `$${platformRevenue.toFixed(2)}`,
       icon: DollarSign,
-      sub: "From service fees",
+      sub: `${totalBookings} total bookings`,
       color: "bg-purple-50 text-purple-600",
     },
   ];
@@ -105,6 +125,49 @@ export default async function AdminOverviewPage() {
           </Card>
         ))}
       </div>
+
+      {/* Pending Review Section */}
+      {pendingListings.length > 0 && (
+        <Card className="rounded-2xl border-gray-200 shadow-sm mb-6">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold text-navy">Pending Review</CardTitle>
+              <p className="text-sm text-gray-400 mt-0.5">Listings awaiting your approval</p>
+            </div>
+            <Link
+              href="/admin/listings"
+              className="text-sm text-ocean hover:underline"
+            >
+              View all
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingListings.map((listing) => (
+                <div key={listing.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{listing.title}</p>
+                    <p className="text-xs text-gray-400">
+                      by {listing.host.firstName} {listing.host.lastName} &middot; {listing.locationName} &middot; {new Date(listing.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <PendingReviewActions listingId={listing.id} />
+                    <a
+                      href={`/listings/${listing.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-gray-400 hover:text-ocean underline"
+                    >
+                      Preview
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="rounded-2xl border-gray-200 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">

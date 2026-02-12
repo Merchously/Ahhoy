@@ -115,6 +115,7 @@ model ActivityType {
 
 enum ListingStatus {
   DRAFT
+  PENDING_REVIEW
   PUBLISHED
   PAUSED
   ARCHIVED

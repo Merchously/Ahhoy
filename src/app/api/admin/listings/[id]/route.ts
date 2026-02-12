@@ -15,7 +15,7 @@ export async function PUT(
   const body = await request.json();
   const { status } = body;
 
-  if (!status || !["DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"].includes(status)) {
+  if (!status || !["DRAFT", "PENDING_REVIEW", "PUBLISHED", "PAUSED", "ARCHIVED"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 

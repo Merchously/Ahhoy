@@ -72,6 +72,17 @@ export async function PUT(
 
   const body = await request.json();
 
+  // Hosts cannot set PUBLISHED directly — must go through admin approval
+  if (body.status) {
+    const allowedHostStatuses = ["DRAFT", "PENDING_REVIEW", "PAUSED", "ARCHIVED"];
+    if (!allowedHostStatuses.includes(body.status)) {
+      return NextResponse.json(
+        { error: "Only admins can publish listings. Submit for review instead." },
+        { status: 403 }
+      );
+    }
+  }
+
   const updated = await prisma.listing.update({
     where: { id },
     data: body,

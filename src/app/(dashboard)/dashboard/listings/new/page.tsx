@@ -15,9 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, ArrowRight, Check, Upload, X } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Check, X, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { ACTIVITY_TYPES, BOAT_TYPES } from "@/lib/constants";
+import { PhotoUploadZone } from "@/components/shared/PhotoUploadZone";
 
 const steps = ["Basic Info", "Location", "Boat Details", "Photos", "Pricing", "Review"];
 
@@ -66,39 +67,8 @@ export default function NewListingPage() {
     }));
   }
 
-  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files?.length) return;
-
-    const remaining = 10 - form.photos.length;
-    const toUpload = Array.from(files).slice(0, remaining);
-
-    if (toUpload.length === 0) {
-      toast.error("Maximum 10 photos allowed");
-      return;
-    }
-
-    setUploadingPhoto(true);
-    try {
-      for (const file of toUpload) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        if (res.ok) {
-          const { url } = await res.json();
-          setForm((prev) => ({ ...prev, photos: [...prev.photos, url] }));
-        } else {
-          const data = await res.json();
-          toast.error(data.error || "Failed to upload photo");
-        }
-      }
-    } catch {
-      toast.error("Failed to upload photo");
-    } finally {
-      setUploadingPhoto(false);
-      // Reset the input so the same file can be selected again
-      e.target.value = "";
-    }
+  function handlePhotosUploaded(urls: string[]) {
+    setForm((prev) => ({ ...prev, photos: [...prev.photos, ...urls] }));
   }
 
   function removePhoto(index: number) {
@@ -106,6 +76,24 @@ export default function NewListingPage() {
       ...prev,
       photos: prev.photos.filter((_, i) => i !== index),
     }));
+  }
+
+  function handlePhotoDragStart(e: React.DragEvent, index: number) {
+    e.dataTransfer.setData("text/plain", String(index));
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function handlePhotoDrop(e: React.DragEvent, targetIndex: number) {
+    e.preventDefault();
+    const sourceIndex = Number(e.dataTransfer.getData("text/plain"));
+    if (sourceIndex === targetIndex) return;
+
+    setForm((prev) => {
+      const newPhotos = [...prev.photos];
+      const [moved] = newPhotos.splice(sourceIndex, 1);
+      newPhotos.splice(targetIndex, 0, moved);
+      return { ...prev, photos: newPhotos };
+    });
   }
 
   async function handleSubmit() {
@@ -379,7 +367,7 @@ export default function NewListingPage() {
               <div className="space-y-2">
                 <Label>Photos (up to 10)</Label>
                 <p className="text-sm text-gray-500">
-                  The first photo will be the cover image. Max 5MB per file (JPEG, PNG, WebP, GIF).
+                  The first photo will be the cover image. Drag to reorder. Max 5MB per file.
                 </p>
               </div>
 
@@ -388,7 +376,11 @@ export default function NewListingPage() {
                   {form.photos.map((url, i) => (
                     <div
                       key={url}
-                      className="relative aspect-[4/3] rounded-lg overflow-hidden group"
+                      draggable
+                      onDragStart={(e) => handlePhotoDragStart(e, i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handlePhotoDrop(e, i)}
+                      className="relative aspect-[4/3] rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing"
                     >
                       <img
                         src={url}
@@ -400,42 +392,31 @@ export default function NewListingPage() {
                           Cover
                         </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(i)}
-                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                          <GripVertical className="h-3 w-3" />
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(i)}
+                          className="bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
               {form.photos.length < 10 && (
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
-                  {uploadingPhoto ? (
-                    <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
-                  ) : (
-                    <Upload className="h-8 w-8 text-gray-400" />
-                  )}
-                  <span className="text-sm text-gray-500 mt-2">
-                    {uploadingPhoto
-                      ? "Uploading..."
-                      : "Click to upload photos"}
-                  </span>
-                  <span className="text-xs text-gray-400 mt-1">
-                    {form.photos.length}/10 photos
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    multiple
-                    className="hidden"
-                    onChange={handlePhotoUpload}
-                    disabled={uploadingPhoto}
-                  />
-                </label>
+                <PhotoUploadZone
+                  onUpload={handlePhotosUploaded}
+                  maxPhotos={10}
+                  currentCount={form.photos.length}
+                  uploading={uploadingPhoto}
+                  setUploading={setUploadingPhoto}
+                />
               )}
             </>
           )}

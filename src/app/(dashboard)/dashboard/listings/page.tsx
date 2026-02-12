@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 const statusStyles: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-600",
+  PENDING_REVIEW: "bg-blue-100 text-blue-700",
   PUBLISHED: "bg-green-100 text-green-700",
   PAUSED: "bg-amber-100 text-amber-700",
   ARCHIVED: "bg-red-100 text-red-700",
@@ -92,7 +93,7 @@ export default async function ListingsPage() {
                     <Badge
                       className={`rounded-full text-xs ${statusStyles[listing.status]}`}
                     >
-                      {listing.status}
+                      {listing.status === "PENDING_REVIEW" ? "Under Review" : listing.status}
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-500">

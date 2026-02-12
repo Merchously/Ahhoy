@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Clock, Users } from "lucide-react";
+import { ListingImage } from "@/components/shared/ListingImage";
 import type { ListingCardData } from "@/types";
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
@@ -18,7 +18,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         {/* Image */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
           {listing.primaryPhoto ? (
-            <Image
+            <ListingImage
               src={listing.primaryPhoto}
               alt={listing.title}
               fill

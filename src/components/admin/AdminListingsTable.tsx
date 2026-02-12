@@ -12,7 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 type Listing = {
   id: string;
@@ -25,13 +26,22 @@ type Listing = {
   _count: { bookings: number };
 };
 
-const STATUSES = ["ALL", "DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"] as const;
+const STATUSES = ["ALL", "PENDING_REVIEW", "DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"] as const;
 
 const statusBadgeClass: Record<string, string> = {
   DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  PENDING_REVIEW: "bg-blue-50 text-blue-700 border-blue-200",
   PUBLISHED: "bg-green-50 text-green-700 border-green-200",
   PAUSED: "bg-orange-50 text-orange-700 border-orange-200",
   ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
+};
+
+const statusLabel: Record<string, string> = {
+  DRAFT: "Draft",
+  PENDING_REVIEW: "Pending Review",
+  PUBLISHED: "Published",
+  PAUSED: "Paused",
+  ARCHIVED: "Archived",
 };
 
 export function AdminListingsTable() {
@@ -67,6 +77,26 @@ export function AdminListingsTable() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
+    fetchListings();
+  }
+
+  async function handleApprove(listingId: string) {
+    await fetch(`/api/admin/listings/${listingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "PUBLISHED" }),
+    });
+    toast.success("Listing approved and published");
+    fetchListings();
+  }
+
+  async function handleReject(listingId: string) {
+    await fetch(`/api/admin/listings/${listingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "DRAFT" }),
+    });
+    toast.success("Listing rejected and moved back to draft");
     fetchListings();
   }
 
@@ -108,7 +138,7 @@ export function AdminListingsTable() {
                   : "border-gray-200 text-gray-500 hover:bg-gray-50 rounded-full"
               }
             >
-              {s === "ALL" ? "All" : s}
+              {s === "ALL" ? "All" : statusLabel[s] || s}
             </Button>
           ))}
         </div>
@@ -156,9 +186,9 @@ export function AdminListingsTable() {
                       onChange={(e) => handleStatusChange(listing.id, e.target.value)}
                       className="bg-transparent text-xs rounded px-1 py-0.5 border-0 cursor-pointer text-gray-600"
                     >
-                      {["DRAFT", "PUBLISHED", "PAUSED", "ARCHIVED"].map((s) => (
+                      {["DRAFT", "PENDING_REVIEW", "PUBLISHED", "PAUSED", "ARCHIVED"].map((s) => (
                         <option key={s} value={s}>
-                          {s}
+                          {statusLabel[s] || s}
                         </option>
                       ))}
                     </select>
@@ -166,7 +196,7 @@ export function AdminListingsTable() {
                       variant="outline"
                       className={`ml-1 text-[10px] ${statusBadgeClass[listing.status] || ""}`}
                     >
-                      {listing.status}
+                      {statusLabel[listing.status] || listing.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-gray-500">{listing.locationName}</TableCell>
@@ -175,14 +205,34 @@ export function AdminListingsTable() {
                     {new Date(listing.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <a
-                      href={`/listings/${listing.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-gray-400 hover:text-ocean"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+                    <div className="flex items-center justify-end gap-1">
+                      {listing.status === "PENDING_REVIEW" && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(listing.id)}
+                            className="inline-flex items-center text-green-600 hover:text-green-700 p-1 rounded-lg hover:bg-green-50"
+                            title="Approve"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleReject(listing.id)}
+                            className="inline-flex items-center text-red-500 hover:text-red-600 p-1 rounded-lg hover:bg-red-50"
+                            title="Reject"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      <a
+                        href={`/listings/${listing.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-gray-400 hover:text-ocean p-1 rounded-lg hover:bg-gray-50"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

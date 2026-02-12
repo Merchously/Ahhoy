@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { ListingImage } from "@/components/shared/ListingImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -259,7 +260,7 @@ export default function ListingDetailPage() {
             className="relative md:col-span-2 md:row-span-2 cursor-pointer"
             onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
           >
-            <Image
+            <ListingImage
               src={listing.photos[0].url}
               alt={listing.photos[0].altText || listing.title}
               fill
@@ -275,7 +276,7 @@ export default function ListingDetailPage() {
               className="relative hidden md:block cursor-pointer"
               onClick={() => { setGalleryIndex(i + 1); setGalleryOpen(true); }}
             >
-              <Image
+              <ListingImage
                 src={photo.url}
                 alt={photo.altText || listing.title}
                 fill
@@ -332,7 +333,7 @@ export default function ListingDetailPage() {
           </div>
           <div className="p-4">
             <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
-              <Image
+              <ListingImage
                 src={listing.photos[galleryIndex]?.url || ""}
                 alt={listing.photos[galleryIndex]?.altText || listing.title}
                 fill
