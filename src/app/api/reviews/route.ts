@@ -10,6 +10,9 @@ const createReviewSchema = z.object({
   ratingAccuracy: z.number().int().min(1).max(5).optional(),
   ratingCommunication: z.number().int().min(1).max(5).optional(),
   ratingValue: z.number().int().min(1).max(5).optional(),
+  ratingSafety: z.number().int().min(1).max(5).optional(),
+  ratingCheckin: z.number().int().min(1).max(5).optional(),
+  ratingCleanliness: z.number().int().min(1).max(5).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -50,7 +53,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const { bookingId, rating, comment, ratingAccuracy, ratingCommunication, ratingValue } = parsed.data;
+  const {
+    bookingId, rating, comment,
+    ratingAccuracy, ratingCommunication, ratingValue,
+    ratingSafety, ratingCheckin, ratingCleanliness,
+  } = parsed.data;
 
   // Get booking
   const booking = await prisma.booking.findUnique({
@@ -85,6 +92,9 @@ export async function POST(request: Request) {
       ratingAccuracy,
       ratingCommunication,
       ratingValue,
+      ratingSafety,
+      ratingCheckin,
+      ratingCleanliness,
     },
   });
 

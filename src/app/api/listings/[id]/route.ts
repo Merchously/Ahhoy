@@ -21,6 +21,14 @@ export async function GET(
           avatarUrl: true,
           bio: true,
           createdAt: true,
+          languages: true,
+          isSuperCaptain: true,
+          _count: {
+            select: {
+              listings: { where: { status: "PUBLISHED" } },
+              reviewsReceived: true,
+            },
+          },
         },
       },
       reviews: {
@@ -40,10 +48,37 @@ export async function GET(
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
 
+  // Fetch booked dates for availability calendar
+  const bookedBookings = await prisma.booking.findMany({
+    where: {
+      listingId: id,
+      status: { in: ["PENDING", "CONFIRMED", "PAID"] },
+      date: { gte: new Date() },
+    },
+    select: { date: true },
+  });
+
   const averageRating =
     listing.reviews.length > 0
       ? listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length
       : null;
+
+  // Compute per-category rating averages
+  const reviews = listing.reviews;
+  function avgField(field: keyof typeof reviews[number]): number | null {
+    const rated = reviews.filter((r) => r[field] != null);
+    if (rated.length === 0) return null;
+    return rated.reduce((sum, r) => sum + (r[field] as number), 0) / rated.length;
+  }
+
+  const categoryAverages = {
+    safety: avgField("ratingSafety"),
+    accuracy: avgField("ratingAccuracy"),
+    checkin: avgField("ratingCheckin"),
+    communication: avgField("ratingCommunication"),
+    cleanliness: avgField("ratingCleanliness"),
+    value: avgField("ratingValue"),
+  };
 
   return NextResponse.json({
     ...listing,
@@ -51,6 +86,8 @@ export async function GET(
     flatPrice: listing.flatPrice ? Number(listing.flatPrice) : null,
     averageRating,
     reviewCount: listing.reviews.length,
+    categoryAverages,
+    bookedDates: bookedBookings.map((b) => b.date.toISOString()),
   });
 }
 

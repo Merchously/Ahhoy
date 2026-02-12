@@ -3,14 +3,21 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { format } from "date-fns";
 import { ListingImage } from "@/components/shared/ListingImage";
+import { AvailabilityCalendar } from "@/components/listings/AvailabilityCalendar";
+import { CaptainSection } from "@/components/listings/CaptainSection";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -73,6 +80,14 @@ interface ListingDetail {
     isPrimary: boolean;
   }[];
   activityTypes: { activityType: { label: string; slug: string } }[];
+  availability: {
+    id: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+  }[];
+  blockedDates: { id: string; date: string; reason: string | null }[];
+  bookedDates: string[];
   host: {
     id: string;
     firstName: string;
@@ -80,6 +95,12 @@ interface ListingDetail {
     avatarUrl: string | null;
     bio: string | null;
     createdAt: string;
+    languages: string[];
+    isSuperCaptain: boolean;
+    _count: {
+      listings: number;
+      reviewsReceived: number;
+    };
   };
   reviews: {
     id: string;
@@ -94,6 +115,14 @@ interface ListingDetail {
   }[];
   averageRating: number | null;
   reviewCount: number;
+  categoryAverages: {
+    safety: number | null;
+    accuracy: number | null;
+    checkin: number | null;
+    communication: number | null;
+    cleanliness: number | null;
+    value: number | null;
+  };
 }
 
 export default function ListingDetailPage() {
@@ -102,11 +131,10 @@ export default function ListingDetailPage() {
   const { data: session } = useSession();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bookingDate, setBookingDate] = useState("");
+  const [bookingDate, setBookingDate] = useState<Date | undefined>(undefined);
   const [guestCount, setGuestCount] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [showAllReviews, setShowAllReviews] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
@@ -140,7 +168,7 @@ export default function ListingDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listingId: listing!.id,
-          date: bookingDate,
+          date: format(bookingDate!, "yyyy-MM-dd"),
           startTime: "10:00",
           endTime: `${Math.floor(10 + listing!.durationMinutes / 60)}:${String(listing!.durationMinutes % 60).padStart(2, "0")}`,
           guestCount,
@@ -230,18 +258,6 @@ export default function ListingDetailPage() {
     listing.durationMinutes >= 60
       ? `${Math.floor(listing.durationMinutes / 60)}h${listing.durationMinutes % 60 ? ` ${listing.durationMinutes % 60}m` : ""}`
       : `${listing.durationMinutes}m`;
-
-  // Rating breakdown
-  const ratingCounts = [0, 0, 0, 0, 0]; // index 0 = 1-star, index 4 = 5-star
-  listing.reviews.forEach((r) => {
-    if (r.rating >= 1 && r.rating <= 5) ratingCounts[r.rating - 1]++;
-  });
-  const maxRatingCount = Math.max(...ratingCounts, 1);
-
-  // Reviews to display
-  const displayedReviews = showAllReviews
-    ? listing.reviews
-    : listing.reviews.slice(0, 6);
 
   // Mapbox static image
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -573,89 +589,12 @@ export default function ListingDetailPage() {
           {listing.reviews.length > 0 && (
             <>
               <div className="py-8" id="reviews-section">
-                {/* Review header */}
-                <div className="flex items-center gap-2 mb-6">
-                  <Star className="h-6 w-6 fill-navy text-navy" />
-                  <span className="text-2xl font-semibold text-navy">
-                    {listing.averageRating?.toFixed(1)}
-                  </span>
-                  <span className="text-2xl text-navy">·</span>
-                  <span className="text-2xl font-semibold text-navy">
-                    {listing.reviewCount} review{listing.reviewCount !== 1 && "s"}
-                  </span>
-                </div>
-
-                {/* Rating breakdown bars */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 mb-8">
-                  {[5, 4, 3, 2, 1].map((star) => (
-                    <div key={star} className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600 w-3">{star}</span>
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-navy rounded-full transition-all"
-                          style={{
-                            width: `${(ratingCounts[star - 1] / maxRatingCount) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Review cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                  {displayedReviews.map((review) => (
-                    <div key={review.id}>
-                      <div className="flex items-center gap-3 mb-2">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={review.author.avatarUrl || undefined} />
-                          <AvatarFallback className="bg-gray-200 text-gray-600 text-sm font-medium">
-                            {review.author.firstName[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-semibold text-navy">
-                            {review.author.firstName} {review.author.lastName}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(review.createdAt).toLocaleDateString("en-US", {
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-0.5 mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3.5 w-3.5 ${
-                              i < review.rating
-                                ? "fill-navy text-navy"
-                                : "text-gray-200"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      {review.comment && (
-                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-4">
-                          {review.comment}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Show all reviews */}
-                {listing.reviews.length > 6 && !showAllReviews && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAllReviews(true)}
-                    className="mt-8 rounded-xl border-navy text-navy hover:bg-navy/5"
-                  >
-                    Show all {listing.reviewCount} reviews
-                  </Button>
-                )}
+                <ReviewSection
+                  reviews={listing.reviews}
+                  averageRating={listing.averageRating}
+                  reviewCount={listing.reviewCount}
+                  categoryAverages={listing.categoryAverages}
+                />
               </div>
               <Separator />
             </>
@@ -685,34 +624,30 @@ export default function ListingDetailPage() {
             </>
           )}
 
+          {/* ====== AVAILABILITY CALENDAR ====== */}
+          <div className="py-8">
+            <h2 className="text-xl font-semibold text-navy mb-5 flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Availability
+            </h2>
+            <AvailabilityCalendar
+              availability={listing.availability}
+              blockedDates={listing.blockedDates}
+              bookedDates={listing.bookedDates}
+              selectedDate={bookingDate}
+              onDateSelect={setBookingDate}
+              numberOfMonths={2}
+            />
+          </div>
+
+          <Separator />
+
           {/* ====== MEET YOUR HOST ====== */}
           <div className="py-8">
             <h2 className="text-xl font-semibold text-navy mb-5">
               Meet your Captain
             </h2>
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={listing.host.avatarUrl || undefined} />
-                  <AvatarFallback className="bg-ocean/10 text-ocean font-semibold text-xl">
-                    {listing.host.firstName[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-lg font-semibold text-navy">
-                    {listing.host.firstName} {listing.host.lastName}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Captain since {new Date(listing.host.createdAt).getFullYear()}
-                  </p>
-                </div>
-              </div>
-              {listing.host.bio && (
-                <p className="text-gray-600 leading-relaxed">
-                  {listing.host.bio}
-                </p>
-              )}
-            </div>
+            <CaptainSection host={listing.host} />
           </div>
 
           <Separator />
@@ -836,17 +771,26 @@ export default function ListingDetailPage() {
                 <Label htmlFor="date" className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
                   Date
                 </Label>
-                <div className="relative mt-1">
-                  <Calendar className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="date"
-                    type="date"
-                    className="border-0 p-0 pl-6 h-6 text-sm shadow-none focus-visible:ring-0"
-                    value={bookingDate}
-                    onChange={(e) => setBookingDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2 mt-1 w-full text-left">
+                      <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
+                      <span className={`text-sm ${bookingDate ? "text-navy" : "text-gray-400"}`}>
+                        {bookingDate ? format(bookingDate, "MMM d, yyyy") : "Select a date"}
+                      </span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <AvailabilityCalendar
+                      availability={listing.availability}
+                      blockedDates={listing.blockedDates}
+                      bookedDates={listing.bookedDates}
+                      selectedDate={bookingDate}
+                      onDateSelect={setBookingDate}
+                      numberOfMonths={1}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Guests */}
