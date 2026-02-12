@@ -184,6 +184,81 @@ const LISTINGS = [
   { title: "Ash Scattering Memorial Voyage", desc: "A dignified, peaceful voyage for scattering ashes at sea. Private ceremony with floral wreath, moment of silence, and certificate of coordinates.", activity: "custom", pricing: "FLAT_RATE", price: 600, duration: 120, minG: 2, maxG: 12, boat: "Sailboat" },
 ];
 
+// ─── Activity-Specific Photo Pools (Unsplash CDN) ────────────
+const PHOTO_POOLS = {
+  fishing: [
+    "photo-1707172101661-cbd642c1fb4e", // fishing boat at sea
+    "photo-1576725011562-7fe415bfbe31", // fishing rod and net on boat
+    "photo-1758798294218-722810fc1418", // man fishing with rod
+    "photo-1687706418918-1c95d829b478", // fishing boat near shore
+    "photo-1634043270873-f2f830e5d4bf", // fishing boat at sunset
+    "photo-1542397994-696a3f0c8f9a", // fishing reels closeup
+    "photo-1712251791130-a1918694810a", // person fishing on water
+    "photo-1647980516774-7e3676a92d38", // man holding fish on boat
+    "photo-1505850557988-b858c0aec076", // person holding fishing reel
+  ],
+  jet_ski: [
+    "photo-1648484983838-b47185140bee", // jet ski in water
+    "photo-1728354708576-62302c2a6be7", // jet ski in ocean
+    "photo-1755566981083-5e54b2915148", // jet ski water splash
+    "photo-1698994905884-a4bf3eaf6806", // jet ski ocean ride
+    "photo-1741269522537-135946f74dc1", // jet ski splash action
+    "photo-1755566981084-00c579a061a5", // jet ski riding
+  ],
+  yacht_party: [
+    "photo-1741183575544-ae96e3c8c221", // luxury boats in marina
+    "photo-1740482881694-d72f4e4cc47e", // large white yacht
+    "photo-1528154291023-a6525fabe5b4", // white yacht aerial view
+    "photo-1512602110-67198e50f815", // white yacht at dock
+    "photo-1672939113906-d4a43895788b", // people on luxury boat
+    "photo-1708619273083-71d2cbc74385", // people on yacht deck
+  ],
+  sunset_cruise: [
+    "photo-1715706107718-4a0cc4f0335c", // sunset sailing
+    "photo-1758066241651-400fda856086", // sailboat at sunset
+    "photo-1596983364824-a87391b4d2d9", // sunset on sea
+    "photo-1693910146479-5cd6c17985e7", // golden hour ocean
+    "photo-1770273786039-974fac264caa", // sunset boat cruise
+  ],
+  snorkeling_diving: [
+    "photo-1692659505460-0153c4f51a2c", // scuba diver over reef
+    "photo-1670500012581-022f56ee754e", // coral reef
+    "photo-1682687982049-b3d433368cd1", // scuba diver at reef
+    "photo-1682687982134-2ac563b2228b", // person swimming over reef
+    "photo-1519676241691-fe10cb097ae5", // scuba diver underwater
+    "photo-1682686581663-179efad3cd2f", // snorkeler near reef
+  ],
+  wakeboarding: [
+    "photo-1669173733206-f7e480655703", // water skiing action
+    "photo-1663817071875-340aa2ff4d70", // water ski sport
+    "photo-1531001602318-1916852b9205", // wakeboarding
+    "photo-1471362229315-912f1caf95f7", // wakeboard flip
+    "photo-1576837839711-7db60e14a18f", // wakeboarding action
+  ],
+  boat_rental: [
+    "photo-1757873780458-72143acc1c9a", // catamaran in turquoise water
+    "photo-1507778031059-d74c30b52585", // aerial boat sailing
+    "photo-1501771924607-209f42a6e7e4", // sailboats on water
+    "photo-1663358764963-649d1f6ec9cb", // boat sailing on sea
+    "photo-1533293046890-f1ab3e5e3af9", // aerial white boat sailing
+    "photo-1531391959417-97fdf08b3290", // blue sailboat open sea
+    "photo-1550869520-9ecc0516b47d", // speedboat on water
+  ],
+  custom: [
+    "photo-1475318681864-ef1966c3cbb7", // whale in ocean
+    "photo-1703175916813-c1eb102c8035", // humpback whale dive
+    "photo-1698472505070-6d3b90afb530", // humpback whale underwater
+    "photo-1723748651613-e24586599f30", // humpback whale jumping
+    "photo-1498931299472-f7a63a5a1cfa", // fireworks over water
+    "photo-1625872594162-860bf5b9d83d", // fireworks display over water
+    "photo-1455906876003-298dd8c44ec8", // people watching fireworks
+  ],
+};
+
+function unsplashUrl(photoPath) {
+  return `https://images.unsplash.com/${photoPath}?w=800&h=600&fit=crop&auto=format&q=80`;
+}
+
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
 try {
@@ -295,12 +370,13 @@ try {
       [listingId, activityTypeIds[l.activity]]
     );
 
-    // ─── Add photos (4 per listing) ─────────────────────────
-    // Using picsum.photos with deterministic seeds for consistent placeholder images
-    const photoSeeds = [i * 4 + 1, i * 4 + 2, i * 4 + 3, i * 4 + 4];
+    // ─── Add photos (4 per listing, from activity-specific Unsplash pool) ───
+    const photoPool = PHOTO_POOLS[l.activity] || PHOTO_POOLS.custom;
+    const shuffledPhotos = [...photoPool].sort(() => Math.random() - 0.5);
     for (let p = 0; p < 4; p++) {
       const photoId = genId();
-      const url = `https://picsum.photos/seed/ahhoy${photoSeeds[p]}/800/600`;
+      const photoPath = shuffledPhotos[p % shuffledPhotos.length];
+      const url = unsplashUrl(photoPath);
       await pool.query(
         `INSERT INTO listing_photos (id, "listingId", url, "altText", "order", "isPrimary")
          VALUES ($1, $2, $3, $4, $5, $6)`,
