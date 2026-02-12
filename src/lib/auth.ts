@@ -69,27 +69,6 @@ export const {
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.id = user.id!;
-        token.role = user.role || "GUEST";
-        token.stripeConnectId = user.stripeConnectId;
-      }
-
-      // Allow session updates
-      if (trigger === "update" && session) {
-        token.role = session.role || token.role;
-        token.stripeConnectId = session.stripeConnectId || token.stripeConnectId;
-      }
-
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as string;
-      session.user.stripeConnectId = token.stripeConnectId as string | null | undefined;
-      return session;
-    },
-  },
+  // jwt, session, and authorized callbacks are all defined in authConfig
+  // and inherited via the spread above — no need to duplicate them here
 });
