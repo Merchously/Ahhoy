@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin, Star } from "lucide-react";
 import Link from "next/link";
 import type { BookingWithRelations } from "@/types";
 
@@ -79,6 +79,16 @@ export default function BookingsPage() {
                   <p className="text-sm font-medium mt-1">
                     ${Number(booking.totalPrice).toFixed(2)}
                   </p>
+                  {booking.review ? (
+                    <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                      <Star className="h-3 w-3 fill-green-600" />
+                      Reviewed
+                    </p>
+                  ) : booking.status === "COMPLETED" ? (
+                    <p className="text-xs text-ocean font-medium mt-1">
+                      Leave a review &rarr;
+                    </p>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
