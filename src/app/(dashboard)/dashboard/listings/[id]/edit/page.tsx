@@ -64,6 +64,8 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
     requirements: "",
     cancellationPolicy: "MODERATE" as "FLEXIBLE" | "MODERATE" | "STRICT",
     instantBook: false,
+    isMultiDay: false,
+    pricePerNight: "",
     status: "DRAFT" as string,
   });
 
@@ -102,6 +104,8 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
           requirements: (data.requirements || []).join(", "),
           cancellationPolicy: data.cancellationPolicy || "MODERATE",
           instantBook: data.instantBook || false,
+          isMultiDay: data.isMultiDay || false,
+          pricePerNight: data.pricePerNight?.toString() || "",
           status: data.status || "DRAFT",
         });
         setPhotos(data.photos || []);
@@ -230,6 +234,8 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
           .filter(Boolean),
         cancellationPolicy: form.cancellationPolicy,
         instantBook: form.instantBook,
+        isMultiDay: form.isMultiDay,
+        pricePerNight: form.isMultiDay && form.pricePerNight ? Number(form.pricePerNight) : null,
       };
 
       const res = await fetch(`/api/listings/${id}`, {
@@ -509,6 +515,32 @@ export default function EditListingPage({ params }: { params: Promise<{ id: stri
               />
               <Label htmlFor="instantBook">Enable instant booking</Label>
             </div>
+            <Separator />
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="isMultiDay"
+                checked={form.isMultiDay}
+                onChange={(e) => updateForm({ isMultiDay: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="isMultiDay">This is a multi-day experience (e.g., yacht charter)</Label>
+            </div>
+            {form.isMultiDay && (
+              <div className="space-y-2">
+                <Label>Price Per Night ($)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={form.pricePerNight}
+                  onChange={(e) => updateForm({ pricePerNight: e.target.value })}
+                  placeholder="e.g., 500"
+                />
+                <p className="text-xs text-gray-500">
+                  Nightly rate. For per-person pricing, total = price/night × nights × guests.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

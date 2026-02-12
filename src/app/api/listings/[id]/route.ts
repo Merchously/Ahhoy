@@ -55,7 +55,7 @@ export async function GET(
       status: { in: ["PENDING", "CONFIRMED", "PAID"] },
       date: { gte: new Date() },
     },
-    select: { date: true },
+    select: { date: true, endDate: true },
   });
 
   const averageRating =
@@ -80,14 +80,30 @@ export async function GET(
     value: avgField("ratingValue"),
   };
 
+  // Expand multi-day bookings into individual date strings
+  const bookedDates: string[] = [];
+  for (const b of bookedBookings) {
+    if (b.endDate) {
+      const current = new Date(b.date);
+      const end = new Date(b.endDate);
+      while (current <= end) {
+        bookedDates.push(current.toISOString());
+        current.setDate(current.getDate() + 1);
+      }
+    } else {
+      bookedDates.push(b.date.toISOString());
+    }
+  }
+
   return NextResponse.json({
     ...listing,
     pricePerPerson: listing.pricePerPerson ? Number(listing.pricePerPerson) : null,
     flatPrice: listing.flatPrice ? Number(listing.flatPrice) : null,
+    pricePerNight: listing.pricePerNight ? Number(listing.pricePerNight) : null,
     averageRating,
     reviewCount: listing.reviews.length,
     categoryAverages,
-    bookedDates: bookedBookings.map((b) => b.date.toISOString()),
+    bookedDates,
   });
 }
 

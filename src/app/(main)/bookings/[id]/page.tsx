@@ -24,6 +24,7 @@ import { toast } from "sonner";
 interface BookingDetail {
   id: string;
   date: string;
+  endDate: string | null;
   startTime: string;
   endTime: string;
   guestCount: number;
@@ -233,23 +234,36 @@ export default function BookingDetailPage() {
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-gray-400" />
             <div>
-              <p className="text-xs text-gray-500">Date</p>
+              <p className="text-xs text-gray-500">{booking.endDate ? "Dates" : "Date"}</p>
               <p className="text-sm font-medium text-navy">
-                {new Date(booking.date).toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {booking.endDate ? (
+                  <>
+                    {new Date(booking.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                    {" – "}
+                    {new Date(booking.endDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                  </>
+                ) : (
+                  new Date(booking.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                )}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-gray-400" />
             <div>
-              <p className="text-xs text-gray-500">Time</p>
+              <p className="text-xs text-gray-500">
+                {booking.endDate ? "Check-in / Check-out" : "Time"}
+              </p>
               <p className="text-sm font-medium text-navy">
-                {booking.startTime} - {booking.endTime}
+                {booking.endDate
+                  ? `In: ${booking.startTime} / Out: ${booking.endTime}`
+                  : `${booking.startTime} - ${booking.endTime}`
+                }
               </p>
             </div>
           </div>

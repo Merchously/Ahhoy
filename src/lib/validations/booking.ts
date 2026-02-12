@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 export const createBookingSchema = z.object({
   listingId: z.string().min(1),
   date: z.string().min(1, "Date is required"),
+  endDate: z.string().optional(),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   guestCount: z.number().int().min(1, "At least 1 guest is required"),

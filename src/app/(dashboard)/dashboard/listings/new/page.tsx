@@ -52,6 +52,8 @@ export default function NewListingPage() {
     includedItems: "",
     cancellationPolicy: "MODERATE" as "FLEXIBLE" | "MODERATE" | "STRICT",
     instantBook: false,
+    isMultiDay: false,
+    pricePerNight: "",
   });
 
   function updateForm(updates: Partial<typeof form>) {
@@ -129,6 +131,8 @@ export default function NewListingPage() {
           .filter(Boolean),
         cancellationPolicy: form.cancellationPolicy,
         instantBook: form.instantBook,
+        isMultiDay: form.isMultiDay,
+        pricePerNight: form.isMultiDay && form.pricePerNight ? Number(form.pricePerNight) : undefined,
       };
 
       const res = await fetch("/api/listings", {
@@ -527,6 +531,31 @@ export default function NewListingPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="isMultiDay"
+                  checked={form.isMultiDay}
+                  onChange={(e) => updateForm({ isMultiDay: e.target.checked })}
+                  className="rounded"
+                />
+                <Label htmlFor="isMultiDay">This is a multi-day experience (e.g., yacht charter)</Label>
+              </div>
+              {form.isMultiDay && (
+                <div className="space-y-2">
+                  <Label>Price Per Night ($)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={form.pricePerNight}
+                    onChange={(e) => updateForm({ pricePerNight: e.target.value })}
+                    placeholder="e.g., 500"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Nightly rate. For per-person pricing, total = price/night × nights × guests.
+                  </p>
+                </div>
+              )}
             </>
           )}
 
@@ -542,6 +571,9 @@ export default function NewListingPage() {
                   ? `$${form.pricePerPerson}/person`
                   : `$${form.flatPrice} flat`}
               </p>
+              {form.isMultiDay && (
+                <p><strong>Multi-day:</strong> Yes — ${form.pricePerNight}/night</p>
+              )}
               <p><strong>Duration:</strong> {form.durationMinutes} min</p>
               <p><strong>Guests:</strong> {form.minGuests}-{form.maxGuests}</p>
               {form.boatName && <p><strong>Boat:</strong> {form.boatName} ({form.boatType})</p>}

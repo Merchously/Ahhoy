@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { listingId, date, startTime, endTime, guestCount, messageToHost } = parsed.data;
+    const { listingId, date, endDate, startTime, endTime, guestCount, messageToHost } = parsed.data;
 
     // Get listing with host info
     const listing = await prisma.listing.findUnique({
@@ -82,28 +82,74 @@ export async function POST(request: Request) {
     }
 
     // Check availability
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        listingId,
-        date: new Date(date),
-        status: { in: ["PENDING", "CONFIRMED", "PAID"] },
-      },
-    });
+    const startDate = new Date(date);
 
-    if (existingBooking) {
-      return NextResponse.json({ error: "This date is already booked" }, { status: 409 });
+    if (endDate) {
+      // Multi-day: check for overlapping bookings
+      const endDateObj = new Date(endDate);
+      const overlapping = await prisma.booking.findFirst({
+        where: {
+          listingId,
+          status: { in: ["PENDING", "CONFIRMED", "PAID"] },
+          date: { lte: endDateObj },
+          OR: [
+            { endDate: { gte: startDate } },
+            { endDate: null, date: { gte: startDate, lte: endDateObj } },
+          ],
+        },
+      });
+      if (overlapping) {
+        return NextResponse.json({ error: "These dates overlap with an existing booking" }, { status: 409 });
+      }
+
+      // Check blocked dates within range
+      const blockedInRange = await prisma.blockedDate.findFirst({
+        where: {
+          listingId,
+          date: { gte: startDate, lte: endDateObj },
+        },
+      });
+      if (blockedInRange) {
+        return NextResponse.json({ error: "One or more dates in this range are blocked" }, { status: 409 });
+      }
+    } else {
+      // Single-day check
+      const existingBooking = await prisma.booking.findFirst({
+        where: {
+          listingId,
+          date: startDate,
+          status: { in: ["PENDING", "CONFIRMED", "PAID"] },
+        },
+      });
+      if (existingBooking) {
+        return NextResponse.json({ error: "This date is already booked" }, { status: 409 });
+      }
     }
 
     // Calculate pricing
-    const pricePerUnit =
-      listing.pricingType === "PER_PERSON"
-        ? Number(listing.pricePerPerson)
-        : Number(listing.flatPrice);
+    let pricePerUnit: number;
+    let subtotal: number;
 
-    const subtotal =
-      listing.pricingType === "PER_PERSON"
-        ? pricePerUnit * guestCount
-        : pricePerUnit;
+    if (listing.isMultiDay && endDate) {
+      const nights = Math.ceil(
+        (new Date(endDate).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      pricePerUnit = Number(listing.pricePerNight);
+      const nightlyTotal = pricePerUnit * nights;
+      subtotal =
+        listing.pricingType === "PER_PERSON"
+          ? nightlyTotal * guestCount
+          : nightlyTotal;
+    } else {
+      pricePerUnit =
+        listing.pricingType === "PER_PERSON"
+          ? Number(listing.pricePerPerson)
+          : Number(listing.flatPrice);
+      subtotal =
+        listing.pricingType === "PER_PERSON"
+          ? pricePerUnit * guestCount
+          : pricePerUnit;
+    }
 
     const serviceFee = subtotal * (PLATFORM_FEE_PERCENT / 100);
     const totalPrice = subtotal + serviceFee;
@@ -114,7 +160,8 @@ export async function POST(request: Request) {
       data: {
         guestId: session.user.id,
         listingId,
-        date: new Date(date),
+        date: startDate,
+        endDate: endDate ? new Date(endDate) : null,
         startTime,
         endTime,
         guestCount,
@@ -131,6 +178,10 @@ export async function POST(request: Request) {
     });
 
     // Create Stripe Checkout Session
+    const stripeDescription = endDate
+      ? `${date} to ${endDate} | Check-in: ${startTime}, Check-out: ${endTime} | ${guestCount} guest(s)`
+      : `${date} | ${startTime} - ${endTime} | ${guestCount} guest(s)`;
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: session.user.email!,
@@ -140,7 +191,7 @@ export async function POST(request: Request) {
             currency: listing.currency.toLowerCase(),
             product_data: {
               name: listing.title,
-              description: `${date} | ${startTime} - ${endTime} | ${guestCount} guest(s)`,
+              description: stripeDescription,
             },
             unit_amount: Math.round(totalPrice * 100),
           },

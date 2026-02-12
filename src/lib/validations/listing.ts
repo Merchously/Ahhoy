@@ -38,6 +38,8 @@ export const pricingSchema = z.object({
   requirements: z.array(z.string()).default([]),
   cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT"]).default("MODERATE"),
   instantBook: z.boolean().default(false),
+  isMultiDay: z.boolean().optional(),
+  pricePerNight: z.number().positive().optional(),
 });
 
 export const createListingSchema = basicInfoSchema

@@ -148,8 +148,10 @@ model Listing {
   // Pricing
   pricePerPerson Decimal?    @db.Decimal(10, 2)
   flatPrice      Decimal?    @db.Decimal(10, 2)
+  pricePerNight  Decimal?    @db.Decimal(10, 2)
   pricingType    PricingType @default(PER_PERSON)
   currency       String      @default("USD")
+  isMultiDay     Boolean     @default(false)
 
   // Capacity & Duration
   minGuests       Int @default(1)
@@ -288,6 +290,7 @@ model Booking {
   listingId String
 
   date      DateTime @db.Date
+  endDate   DateTime? @db.Date
   startTime String
   endTime   String
 

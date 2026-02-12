@@ -64,7 +64,10 @@ export default function BookingsPage() {
                   <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
                     <span className="flex items-center gap-1">
                       <CalendarDays className="h-3.5 w-3.5" />
-                      {new Date(booking.date).toLocaleDateString()}
+                      {(booking as Record<string, unknown>).endDate
+                        ? `${new Date(booking.date).toLocaleDateString()} – ${new Date(String((booking as Record<string, unknown>).endDate)).toLocaleDateString()}`
+                        : new Date(booking.date).toLocaleDateString()
+                      }
                     </span>
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3.5 w-3.5" />

@@ -131,7 +131,7 @@ const LISTINGS = [
   // YACHT PARTY (8)
   { title: "Luxury Sunset Yacht Party", desc: "Celebrate in style aboard a luxury 65-foot yacht. Premium open bar, gourmet appetizers, DJ sound system, and stunning sunset views. Perfect for birthdays and celebrations.", activity: "yacht_party", pricing: "FLAT_RATE", price: 2500, duration: 240, minG: 10, maxG: 30, boat: "Yacht" },
   { title: "Private Yacht Birthday Bash", desc: "Make your birthday unforgettable with a private yacht party. Includes decorations, champagne toast, catered food, and a dedicated party host.", activity: "yacht_party", pricing: "FLAT_RATE", price: 1800, duration: 240, minG: 8, maxG: 20, boat: "Yacht" },
-  { title: "Corporate Yacht Event", desc: "Impress clients and reward your team with a premium yacht experience. Full catering, AV equipment, and professional service staff included.", activity: "yacht_party", pricing: "FLAT_RATE", price: 3500, duration: 300, minG: 15, maxG: 40, boat: "Yacht" },
+  { title: "Corporate Yacht Retreat", desc: "Impress clients and reward your team with a multi-day premium yacht retreat. Full catering, AV equipment, and professional service staff included. Overnight cabins and meeting spaces.", activity: "yacht_party", pricing: "FLAT_RATE", price: 3500, duration: 300, minG: 15, maxG: 40, boat: "Yacht", multiDay: true, nightPrice: 3500 },
   { title: "Bachelorette Yacht Cruise", desc: "The ultimate bachelorette party! Music, drinks, decorations, and amazing photo opportunities. Optional add-ons include onboard photographer and spa treatments.", activity: "yacht_party", pricing: "FLAT_RATE", price: 1500, duration: 240, minG: 6, maxG: 15, boat: "Yacht" },
   { title: "VIP Catamaran Party", desc: "Spacious catamaran with two levels of entertainment. Swimming platform, water slides, and premium bar service. The most fun you can have on the water.", activity: "yacht_party", pricing: "PER_PERSON", price: 120, duration: 300, minG: 10, maxG: 35, boat: "Catamaran" },
   { title: "Intimate Cocktail Cruise", desc: "An elegant evening aboard a classic motor yacht. Craft cocktails, charcuterie boards, and city skyline views. Limited to 12 guests for an exclusive experience.", activity: "yacht_party", pricing: "PER_PERSON", price: 175, duration: 180, minG: 4, maxG: 12, boat: "Yacht" },
@@ -169,10 +169,10 @@ const LISTINGS = [
 
   // BOAT RENTAL (6)
   { title: "Self-Drive Pontoon Boat Rental", desc: "No captain needed! Rent a pontoon boat and explore at your own pace. Easy to drive, spacious, and perfect for a day on the water with family or friends.", activity: "boat_rental", pricing: "FLAT_RATE", price: 350, duration: 480, minG: 1, maxG: 12, boat: "Pontoon" },
-  { title: "Luxury Yacht Day Charter", desc: "Charter a fully crewed luxury yacht for the day. Includes captain, first mate, and optional chef. Visit islands, swim, and relax in total luxury.", activity: "boat_rental", pricing: "FLAT_RATE", price: 2200, duration: 480, minG: 2, maxG: 12, boat: "Yacht" },
+  { title: "Luxury Yacht Multi-Day Charter", desc: "Charter a fully crewed luxury yacht for multiple days. Includes captain, first mate, and optional chef. Visit islands, swim, and relax in total luxury. Sleep aboard in premium cabins.", activity: "boat_rental", pricing: "FLAT_RATE", price: 2200, duration: 480, minG: 2, maxG: 12, boat: "Yacht", multiDay: true, nightPrice: 2200 },
   { title: "Sailboat Day Rental", desc: "Experienced sailors — take the helm of a beautiful 36-foot sailboat. Full rigging, navigation equipment, and safety gear included. Sailing certification required.", activity: "boat_rental", pricing: "FLAT_RATE", price: 500, duration: 480, minG: 2, maxG: 6, boat: "Sailboat" },
   { title: "Center Console Half-Day Rental", desc: "Perfect for fishing or island hopping. This versatile center console handles everything from calm bays to offshore waters. Fuel included.", activity: "boat_rental", pricing: "FLAT_RATE", price: 400, duration: 240, minG: 1, maxG: 6, boat: "Motorboat" },
-  { title: "Catamaran Week Charter", desc: "Live aboard a stunning 42-foot catamaran for a week. Visit multiple islands, sleep under the stars, and experience the ultimate sailing vacation.", activity: "boat_rental", pricing: "FLAT_RATE", price: 8500, duration: 10080, minG: 2, maxG: 8, boat: "Catamaran" },
+  { title: "Catamaran Week Charter", desc: "Live aboard a stunning 42-foot catamaran for a week. Visit multiple islands, sleep under the stars, and experience the ultimate sailing vacation.", activity: "boat_rental", pricing: "FLAT_RATE", price: 8500, duration: 10080, minG: 2, maxG: 8, boat: "Catamaran", multiDay: true, nightPrice: 1200 },
   { title: "Speed Boat Half-Day Rental", desc: "Zip across the water in a powerful speedboat. Great for water sports, island hopping, or just the thrill of speed. Fuel and safety gear included.", activity: "boat_rental", pricing: "FLAT_RATE", price: 450, duration: 240, minG: 1, maxG: 6, boat: "Speedboat" },
 
   // CUSTOM (6)
@@ -252,6 +252,8 @@ try {
     const includedItems = pickN(INCLUDED_ITEMS_POOL, randomBetween(3, 7));
     const notIncluded = pickN(NOT_INCLUDED_POOL, randomBetween(2, 4));
     const requirements = pickN(REQUIREMENTS_POOL, randomBetween(2, 4));
+    const isMultiDay = l.multiDay || false;
+    const pricePerNight = l.nightPrice || null;
 
     await pool.query(
       `INSERT INTO listings (
@@ -262,6 +264,7 @@ try {
         "boatName", "boatType", "boatLength", "boatCapacity", "boatYear", "boatManufacturer",
         "includedItems", "notIncludedItems", requirements,
         "cancellationPolicy", "instantBook",
+        "isMultiDay", "pricePerNight",
         "createdAt", "updatedAt"
       ) VALUES (
         $1, $2, 'PUBLISHED', $3, $4, $5,
@@ -271,6 +274,7 @@ try {
         $18, $19, $20, $21, $22, $23,
         $24, $25, $26,
         $27, $28,
+        $29, $30,
         NOW(), NOW()
       )`,
       [
@@ -281,6 +285,7 @@ try {
         boatName, l.boat, boatLength, l.maxG, boatYear, manufacturer,
         includedItems, notIncluded, requirements,
         cancellation, instantBook,
+        isMultiDay, pricePerNight,
       ]
     );
 

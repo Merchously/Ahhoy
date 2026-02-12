@@ -6,6 +6,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { ListingImage } from "@/components/shared/ListingImage";
 import { AvailabilityCalendar } from "@/components/listings/AvailabilityCalendar";
+import { TimePicker } from "@/components/listings/TimePicker";
 import { CaptainSection } from "@/components/listings/CaptainSection";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { Button } from "@/components/ui/button";
@@ -57,8 +58,10 @@ interface ListingDetail {
   longitude: number;
   pricePerPerson: number | null;
   flatPrice: number | null;
+  pricePerNight: number | null;
   pricingType: string;
   currency: string;
+  isMultiDay: boolean;
   minGuests: number;
   maxGuests: number;
   durationMinutes: number;
@@ -132,6 +135,9 @@ export default function ListingDetailPage() {
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookingDate, setBookingDate] = useState<Date | undefined>(undefined);
+  const [bookingEndDate, setBookingEndDate] = useState<Date | undefined>(undefined);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [guestCount, setGuestCount] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -149,6 +155,11 @@ export default function ListingDetailPage() {
     fetchListing();
   }, [params.id]);
 
+  function handleDateRangeSelect(range: { from: Date | undefined; to: Date | undefined }) {
+    setBookingDate(range.from);
+    setBookingEndDate(range.to);
+  }
+
   async function handleBook() {
     if (!session) {
       router.push("/login");
@@ -157,6 +168,14 @@ export default function ListingDetailPage() {
 
     if (!bookingDate) {
       toast.error("Please select a date");
+      return;
+    }
+    if (!startTime || !endTime) {
+      toast.error("Please select start and end times");
+      return;
+    }
+    if (listing!.isMultiDay && !bookingEndDate) {
+      toast.error("Please select a check-out date");
       return;
     }
 
@@ -169,8 +188,9 @@ export default function ListingDetailPage() {
         body: JSON.stringify({
           listingId: listing!.id,
           date: format(bookingDate!, "yyyy-MM-dd"),
-          startTime: "10:00",
-          endTime: `${Math.floor(10 + listing!.durationMinutes / 60)}:${String(listing!.durationMinutes % 60).padStart(2, "0")}`,
+          endDate: bookingEndDate ? format(bookingEndDate, "yyyy-MM-dd") : undefined,
+          startTime,
+          endTime,
           guestCount,
         }),
       });
@@ -246,10 +266,29 @@ export default function ListingDetailPage() {
     listing.pricingType === "PER_PERSON"
       ? listing.pricePerPerson
       : listing.flatPrice;
-  const subtotal =
-    listing.pricingType === "PER_PERSON"
-      ? (price || 0) * guestCount
-      : price || 0;
+
+  // Calculate nights for multi-day bookings
+  const nights =
+    listing.isMultiDay && bookingDate && bookingEndDate
+      ? Math.ceil(
+          (bookingEndDate.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+      : 0;
+
+  let subtotal: number;
+  if (listing.isMultiDay && nights > 0) {
+    const nightlyTotal = (listing.pricePerNight || 0) * nights;
+    subtotal =
+      listing.pricingType === "PER_PERSON"
+        ? nightlyTotal * guestCount
+        : nightlyTotal;
+  } else {
+    subtotal =
+      listing.pricingType === "PER_PERSON"
+        ? (price || 0) * guestCount
+        : price || 0;
+  }
+
   const serviceFee = subtotal * 0.15;
   const total = subtotal + serviceFee;
 
@@ -581,6 +620,26 @@ export default function ListingDetailPage() {
               </div>
             </div>
           )}
+
+          {/* ====== AVAILABILITY CALENDAR ====== */}
+          <Separator />
+          <div className="py-8">
+            <h2 className="text-xl font-semibold text-navy mb-5 flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Availability
+            </h2>
+            <AvailabilityCalendar
+              availability={listing.availability}
+              blockedDates={listing.blockedDates}
+              bookedDates={listing.bookedDates}
+              isMultiDay={listing.isMultiDay}
+              selectedDate={listing.isMultiDay ? undefined : bookingDate}
+              onDateSelect={listing.isMultiDay ? undefined : setBookingDate}
+              selectedRange={listing.isMultiDay ? { from: bookingDate, to: bookingEndDate } : undefined}
+              onRangeSelect={listing.isMultiDay ? handleDateRangeSelect : undefined}
+              numberOfMonths={1}
+            />
+          </div>
         </div>
 
         {/* ====== RIGHT COLUMN: BOOKING WIDGET ====== */}
@@ -588,27 +647,47 @@ export default function ListingDetailPage() {
           <div className="sticky top-24 rounded-2xl border border-gray-200 shadow-lg p-6 bg-white">
             {/* Price */}
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-2xl font-semibold text-navy">
-                ${price?.toFixed(0) || "0"}
-              </span>
-              <span className="text-gray-500">
-                {listing.pricingType === "PER_PERSON" ? "/ person" : " total"}
-              </span>
+              {listing.isMultiDay ? (
+                <>
+                  <span className="text-2xl font-semibold text-navy">
+                    ${listing.pricePerNight?.toFixed(0) || "0"}
+                  </span>
+                  <span className="text-gray-500">/ night</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl font-semibold text-navy">
+                    ${price?.toFixed(0) || "0"}
+                  </span>
+                  <span className="text-gray-500">
+                    {listing.pricingType === "PER_PERSON" ? "/ person" : " total"}
+                  </span>
+                </>
+              )}
             </div>
 
-            {/* Date & Guests inputs */}
+            {/* Date, Time & Guests inputs */}
             <div className="border border-gray-300 rounded-xl overflow-hidden mb-4">
-              {/* Date */}
+              {/* Date(s) */}
               <div className="p-3 border-b border-gray-300">
-                <Label htmlFor="date" className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
-                  Date
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+                  {listing.isMultiDay ? "Check-in / Check-out" : "Date"}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button className="flex items-center gap-2 mt-1 w-full text-left">
                       <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
                       <span className={`text-sm ${bookingDate ? "text-navy" : "text-gray-400"}`}>
-                        {bookingDate ? format(bookingDate, "MMM d, yyyy") : "Select a date"}
+                        {listing.isMultiDay
+                          ? bookingDate && bookingEndDate
+                            ? `${format(bookingDate, "MMM d")} – ${format(bookingEndDate, "MMM d, yyyy")}`
+                            : bookingDate
+                              ? `${format(bookingDate, "MMM d")} – Select end date`
+                              : "Select dates"
+                          : bookingDate
+                            ? format(bookingDate, "MMM d, yyyy")
+                            : "Select a date"
+                        }
                       </span>
                     </button>
                   </PopoverTrigger>
@@ -617,12 +696,29 @@ export default function ListingDetailPage() {
                       availability={listing.availability}
                       blockedDates={listing.blockedDates}
                       bookedDates={listing.bookedDates}
-                      selectedDate={bookingDate}
-                      onDateSelect={setBookingDate}
+                      isMultiDay={listing.isMultiDay}
+                      selectedDate={listing.isMultiDay ? undefined : bookingDate}
+                      onDateSelect={listing.isMultiDay ? undefined : setBookingDate}
+                      selectedRange={listing.isMultiDay ? { from: bookingDate, to: bookingEndDate } : undefined}
+                      onRangeSelect={listing.isMultiDay ? handleDateRangeSelect : undefined}
                       numberOfMonths={1}
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
+
+              {/* Time Selection */}
+              <div className="p-3 border-b border-gray-300 grid grid-cols-2 gap-3">
+                <TimePicker
+                  label={listing.isMultiDay ? "Check-in Time" : "Start Time"}
+                  value={startTime}
+                  onChange={setStartTime}
+                />
+                <TimePicker
+                  label={listing.isMultiDay ? "Check-out Time" : "End Time"}
+                  value={endTime}
+                  onChange={setEndTime}
+                />
               </div>
 
               {/* Guests */}
@@ -675,15 +771,36 @@ export default function ListingDetailPage() {
 
             {/* Price breakdown */}
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 underline underline-offset-2 decoration-dotted">
-                  ${price?.toFixed(2)}{" "}
-                  {listing.pricingType === "PER_PERSON"
-                    ? `x ${guestCount} guest${guestCount > 1 ? "s" : ""}`
-                    : "flat rate"}
-                </span>
-                <span className="text-gray-700">${subtotal.toFixed(2)}</span>
-              </div>
+              {listing.isMultiDay && nights > 0 ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 underline underline-offset-2 decoration-dotted">
+                      ${listing.pricePerNight?.toFixed(2)} x {nights} night{nights !== 1 ? "s" : ""}
+                    </span>
+                    <span className="text-gray-700">
+                      ${((listing.pricePerNight || 0) * nights).toFixed(2)}
+                    </span>
+                  </div>
+                  {listing.pricingType === "PER_PERSON" && guestCount > 1 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 underline underline-offset-2 decoration-dotted">
+                        x {guestCount} guest{guestCount > 1 ? "s" : ""}
+                      </span>
+                      <span className="text-gray-700">${subtotal.toFixed(2)}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 underline underline-offset-2 decoration-dotted">
+                    ${price?.toFixed(2)}{" "}
+                    {listing.pricingType === "PER_PERSON"
+                      ? `x ${guestCount} guest${guestCount > 1 ? "s" : ""}`
+                      : "flat rate"}
+                  </span>
+                  <span className="text-gray-700">${subtotal.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-600 underline underline-offset-2 decoration-dotted">
                   Service fee
@@ -756,23 +873,6 @@ export default function ListingDetailPage() {
           </div>
         </>
       )}
-
-      {/* ====== AVAILABILITY CALENDAR ====== */}
-      <Separator />
-      <div className="py-10">
-        <h2 className="text-xl font-semibold text-navy mb-5 flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Availability
-        </h2>
-        <AvailabilityCalendar
-          availability={listing.availability}
-          blockedDates={listing.blockedDates}
-          bookedDates={listing.bookedDates}
-          selectedDate={bookingDate}
-          onDateSelect={setBookingDate}
-          numberOfMonths={2}
-        />
-      </div>
 
       {/* ====== MEET YOUR CAPTAIN ====== */}
       <Separator />

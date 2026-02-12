@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { isBefore, startOfDay, parseISO, isSameDay } from "date-fns";
+import type { DateRange } from "react-day-picker";
 
 const DAY_MAP: Record<string, number> = {
   SUNDAY: 0,
@@ -24,8 +25,13 @@ interface AvailabilityCalendarProps {
   }[];
   blockedDates: { date: string }[];
   bookedDates: string[];
+  // Single-day mode
   selectedDate?: Date | undefined;
-  onDateSelect: (date: Date | undefined) => void;
+  onDateSelect?: (date: Date | undefined) => void;
+  // Multi-day (range) mode
+  isMultiDay?: boolean;
+  selectedRange?: { from: Date | undefined; to: Date | undefined };
+  onRangeSelect?: (range: { from: Date | undefined; to: Date | undefined }) => void;
   numberOfMonths?: 1 | 2;
   className?: string;
 }
@@ -36,7 +42,10 @@ export function AvailabilityCalendar({
   bookedDates,
   selectedDate,
   onDateSelect,
-  numberOfMonths = 2,
+  isMultiDay = false,
+  selectedRange,
+  onRangeSelect,
+  numberOfMonths = 1,
   className,
 }: AvailabilityCalendarProps) {
   const today = startOfDay(new Date());
@@ -99,26 +108,50 @@ export function AvailabilityCalendar({
 
   const todayDate = new Date();
 
+  const sharedProps = {
+    disabled: isDisabled,
+    modifiers: {
+      booked: bookedModifier,
+      blocked: blockedModifier,
+      today: (date: Date) => isSameDay(date, todayDate),
+    },
+    modifiersClassNames: {
+      booked: "!text-gray-400 !line-through",
+      blocked: "!text-gray-300",
+    },
+    numberOfMonths,
+    defaultMonth: todayDate,
+    className: "rounded-xl",
+  };
+
+  function handleRangeSelect(range: DateRange | undefined) {
+    onRangeSelect?.({
+      from: range?.from,
+      to: range?.to,
+    });
+  }
+
   return (
     <div className={className}>
-      <Calendar
-        mode="single"
-        selected={selectedDate}
-        onSelect={onDateSelect}
-        disabled={isDisabled}
-        modifiers={{
-          booked: bookedModifier,
-          blocked: blockedModifier,
-          today: (date: Date) => isSameDay(date, todayDate),
-        }}
-        modifiersClassNames={{
-          booked: "!text-gray-400 !line-through",
-          blocked: "!text-gray-300",
-        }}
-        numberOfMonths={numberOfMonths}
-        defaultMonth={todayDate}
-        className="rounded-xl"
-      />
+      {isMultiDay ? (
+        <Calendar
+          mode="range"
+          selected={
+            selectedRange?.from
+              ? { from: selectedRange.from, to: selectedRange.to ?? undefined }
+              : undefined
+          }
+          onSelect={handleRangeSelect}
+          {...sharedProps}
+        />
+      ) : (
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={onDateSelect}
+          {...sharedProps}
+        />
+      )}
       <div className="flex items-center gap-4 mt-3 px-3 text-xs text-gray-500">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-white border border-gray-200" />
