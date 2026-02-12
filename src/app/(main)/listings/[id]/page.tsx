@@ -555,200 +555,32 @@ export default function ListingDetailPage() {
 
           {/* ====== WHAT'S INCLUDED ====== */}
           {(listing.includedItems.length > 0 || listing.notIncludedItems.length > 0) && (
-            <>
-              <div className="py-8">
-                <h2 className="text-xl font-semibold text-navy mb-5">
-                  What&apos;s included
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                  {listing.includedItems.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-3 py-3 border-b border-gray-100"
-                    >
-                      <Check className="h-5 w-5 text-green-600 shrink-0" />
-                      <span className="text-gray-700">{item}</span>
-                    </div>
-                  ))}
-                  {listing.notIncludedItems.map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-3 py-3 border-b border-gray-100"
-                    >
-                      <X className="h-5 w-5 text-gray-400 shrink-0" />
-                      <span className="text-gray-500 line-through">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-
-          {/* ====== REVIEWS ====== */}
-          {listing.reviews.length > 0 && (
-            <>
-              <div className="py-8" id="reviews-section">
-                <ReviewSection
-                  reviews={listing.reviews}
-                  averageRating={listing.averageRating}
-                  reviewCount={listing.reviewCount}
-                  categoryAverages={listing.categoryAverages}
-                />
-              </div>
-              <Separator />
-            </>
-          )}
-
-          {/* ====== LOCATION MAP ====== */}
-          {hasLocation && mapUrl && (
-            <>
-              <div className="py-8">
-                <h2 className="text-xl font-semibold text-navy mb-2">
-                  Where you&apos;ll be
-                </h2>
-                <p className="text-gray-500 mb-5">
-                  {listing.city}, {listing.state}
-                </p>
-                <div className="relative aspect-[2/1] rounded-2xl overflow-hidden bg-gray-100">
-                  <Image
-                    src={mapUrl}
-                    alt={`Map of ${listing.locationName}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                  />
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-
-          {/* ====== AVAILABILITY CALENDAR ====== */}
-          <div className="py-8">
-            <h2 className="text-xl font-semibold text-navy mb-5 flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Availability
-            </h2>
-            <AvailabilityCalendar
-              availability={listing.availability}
-              blockedDates={listing.blockedDates}
-              bookedDates={listing.bookedDates}
-              selectedDate={bookingDate}
-              onDateSelect={setBookingDate}
-              numberOfMonths={2}
-            />
-          </div>
-
-          <Separator />
-
-          {/* ====== MEET YOUR HOST ====== */}
-          <div className="py-8">
-            <h2 className="text-xl font-semibold text-navy mb-5">
-              Meet your Captain
-            </h2>
-            <CaptainSection host={listing.host} />
-          </div>
-
-          <Separator />
-
-          {/* ====== THINGS TO KNOW ====== */}
-          <div className="py-8">
-            <h2 className="text-xl font-semibold text-navy mb-6">
-              Things to know
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Requirements */}
-              <div>
-                <h3 className="font-semibold text-navy mb-3">Requirements</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  {listing.requirements.length > 0 ? (
-                    listing.requirements.map((req) => (
-                      <li key={req} className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        {req}
-                      </li>
-                    ))
-                  ) : (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Must be able to swim
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Arrive 15 minutes before departure
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Wear appropriate footwear
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
-
-              {/* Cancellation policy */}
-              <div>
-                <h3 className="font-semibold text-navy mb-3">Cancellation policy</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  {listing.cancellationPolicy === "FLEXIBLE" ? (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Free cancellation up to 24 hours before
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Full refund if cancelled in time
-                      </li>
-                    </>
-                  ) : listing.cancellationPolicy === "MODERATE" ? (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        Free cancellation up to 5 days before
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        50% refund within 5 days of trip
-                      </li>
-                    </>
-                  ) : (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        50% refund up to 7 days before
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">·</span>
-                        No refund within 7 days of trip
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
-
-              {/* Safety */}
-              <div>
-                <h3 className="font-semibold text-navy mb-3">Safety</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 mt-0.5">·</span>
-                    Life jackets provided for all guests
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 mt-0.5">·</span>
-                    Coast Guard safety equipment on board
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 mt-0.5">·</span>
-                    Weather-dependent — may be rescheduled
-                  </li>
-                </ul>
+            <div className="py-8">
+              <h2 className="text-xl font-semibold text-navy mb-5">
+                What&apos;s included
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                {listing.includedItems.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 py-3 border-b border-gray-100"
+                  >
+                    <Check className="h-5 w-5 text-green-600 shrink-0" />
+                    <span className="text-gray-700">{item}</span>
+                  </div>
+                ))}
+                {listing.notIncludedItems.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 py-3 border-b border-gray-100"
+                  >
+                    <X className="h-5 w-5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 line-through">{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* ====== RIGHT COLUMN: BOOKING WIDGET ====== */}
@@ -880,6 +712,172 @@ export default function ListingDetailPage() {
                 Report this listing
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ====== FULL-WIDTH SECTIONS (below the 2-col grid) ====== */}
+
+      {/* ====== REVIEWS ====== */}
+      {listing.reviews.length > 0 && (
+        <>
+          <Separator />
+          <div className="py-10" id="reviews-section">
+            <ReviewSection
+              reviews={listing.reviews}
+              averageRating={listing.averageRating}
+              reviewCount={listing.reviewCount}
+              categoryAverages={listing.categoryAverages}
+            />
+          </div>
+        </>
+      )}
+
+      {/* ====== LOCATION MAP ====== */}
+      {hasLocation && mapUrl && (
+        <>
+          <Separator />
+          <div className="py-10">
+            <h2 className="text-xl font-semibold text-navy mb-2">
+              Where you&apos;ll be
+            </h2>
+            <p className="text-gray-500 mb-5">
+              {listing.city}, {listing.state}
+            </p>
+            <div className="relative aspect-[2.5/1] rounded-2xl overflow-hidden bg-gray-100">
+              <Image
+                src={mapUrl}
+                alt={`Map of ${listing.locationName}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 1152px"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ====== AVAILABILITY CALENDAR ====== */}
+      <Separator />
+      <div className="py-10">
+        <h2 className="text-xl font-semibold text-navy mb-5 flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Availability
+        </h2>
+        <AvailabilityCalendar
+          availability={listing.availability}
+          blockedDates={listing.blockedDates}
+          bookedDates={listing.bookedDates}
+          selectedDate={bookingDate}
+          onDateSelect={setBookingDate}
+          numberOfMonths={2}
+        />
+      </div>
+
+      {/* ====== MEET YOUR CAPTAIN ====== */}
+      <Separator />
+      <div className="py-10">
+        <h2 className="text-xl font-semibold text-navy mb-5">
+          Meet your Captain
+        </h2>
+        <CaptainSection host={listing.host} />
+      </div>
+
+      {/* ====== THINGS TO KNOW ====== */}
+      <Separator />
+      <div className="py-10">
+        <h2 className="text-xl font-semibold text-navy mb-6">
+          Things to know
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Requirements */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3">Requirements</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              {listing.requirements.length > 0 ? (
+                listing.requirements.map((req) => (
+                  <li key={req} className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    {req}
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Must be able to swim
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Arrive 15 minutes before departure
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Wear appropriate footwear
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          {/* Cancellation policy */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3">Cancellation policy</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              {listing.cancellationPolicy === "FLEXIBLE" ? (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Free cancellation up to 24 hours before
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Full refund if cancelled in time
+                  </li>
+                </>
+              ) : listing.cancellationPolicy === "MODERATE" ? (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    Free cancellation up to 5 days before
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    50% refund within 5 days of trip
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    50% refund up to 7 days before
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">·</span>
+                    No refund within 7 days of trip
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          {/* Safety */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3">Safety</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-gray-400 mt-0.5">·</span>
+                Life jackets provided for all guests
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gray-400 mt-0.5">·</span>
+                Coast Guard safety equipment on board
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gray-400 mt-0.5">·</span>
+                Weather-dependent — may be rescheduled
+              </li>
+            </ul>
           </div>
         </div>
       </div>
