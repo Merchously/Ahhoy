@@ -298,12 +298,7 @@ export default function ListingDetailPage() {
       ? `${Math.floor(listing.durationMinutes / 60)}h${listing.durationMinutes % 60 ? ` ${listing.durationMinutes % 60}m` : ""}`
       : `${listing.durationMinutes}m`;
 
-  // Mapbox static image
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const hasLocation = listing.latitude && listing.longitude;
-  const mapUrl = hasLocation
-    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0066FF(${listing.longitude},${listing.latitude})/${listing.longitude},${listing.latitude},12/800x400@2x?access_token=${mapboxToken}`
-    : null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -851,7 +846,7 @@ export default function ListingDetailPage() {
       )}
 
       {/* ====== LOCATION MAP ====== */}
-      {hasLocation && mapUrl && (
+      {hasLocation && (
         <>
           <Separator />
           <div className="py-10">
@@ -862,12 +857,11 @@ export default function ListingDetailPage() {
               {listing.city}, {listing.state}
             </p>
             <div className="relative aspect-[2.5/1] rounded-2xl overflow-hidden bg-gray-100">
-              <Image
-                src={mapUrl}
-                alt={`Map of ${listing.locationName}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 1152px"
+              <iframe
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${listing.longitude! - 0.05},${listing.latitude! - 0.03},${listing.longitude! + 0.05},${listing.latitude! + 0.03}&layer=mapnik&marker=${listing.latitude},${listing.longitude}`}
+                className="absolute inset-0 w-full h-full border-0"
+                loading="lazy"
+                title={`Map of ${listing.locationName}`}
               />
             </div>
           </div>
